@@ -1,8 +1,37 @@
 let ws=null, me=null, state=null, selected=new Set(), submittedSelection=false, lastStatus=null, lastEndKey=null;
 
+function captureCardPositions(){
+  const map=new Map();
+  document.querySelectorAll('.card[data-card-id]').forEach(el=>{
+    const r=el.getBoundingClientRect();
+    map.set(el.dataset.cardId,{left:r.left,top:r.top,zone:el.dataset.zone||''});
+  });
+  return map;
+}
+function animateCardMoves(before){
+  if(!before || !before.size)return;
+  requestAnimationFrame(()=>{
+    document.querySelectorAll('.card[data-card-id]').forEach(el=>{
+      const old=before.get(el.dataset.cardId);
+      if(!old)return;
+      const r=el.getBoundingClientRect();
+      const dx=old.left-r.left, dy=old.top-r.top;
+      if(Math.abs(dx)<2 && Math.abs(dy)<2)return;
+      el.style.transition='none';
+      el.style.transform=`translate(${dx}px,${dy}px)`;
+      el.style.zIndex='1200';
+      requestAnimationFrame(()=>{
+        el.style.transition='transform 650ms cubic-bezier(.22,.8,.24,1), box-shadow 650ms ease';
+        el.style.transform='';
+        setTimeout(()=>{el.style.zIndex='';el.style.transition='';},680);
+      });
+    });
+  });
+}
+
 const $=id=>document.getElementById(id);
 function connect(){ ws=new WebSocket((location.protocol==="https:"?"wss://":"ws://")+location.host);
-  ws.onmessage=e=>{const m=JSON.parse(e.data); if(m.type==="error"){ $("lobbyError").textContent=m.message; return;} if(m.type==="joined"){me=m.playerId; $("lobbyError").textContent=""; show("room"); $("roomCodeTitle").textContent=m.code; $("roomBadge").textContent=m.code; $("roomBadge").classList.remove("hidden");} if(m.type==="state"){const previousStatus=state?.status; state=m.state; if(state.status!=="selection"){selected.clear(); submittedSelection=false;} render(); if(state.status==="final" && previousStatus!=="final") showEndgameAnnouncement();}};
+  ws.onmessage=e=>{const m=JSON.parse(e.data); if(m.type==="error"){ $("lobbyError").textContent=m.message; return;} if(m.type==="joined"){me=m.playerId; $("lobbyError").textContent=""; show("room"); $("roomCodeTitle").textContent=m.code; $("roomBadge").textContent=m.code; $("roomBadge").classList.remove("hidden");} if(m.type==="state"){const previousStatus=state?.status; const before=captureCardPositions(); state=m.state; if(state.status!=="selection"){selected.clear(); submittedSelection=false;} render(); animateCardMoves(before); if(state.status==="final" && previousStatus!=="final") showEndgameAnnouncement();}};
   ws.onclose=()=>{if(state) setTimeout(connect,1200)};
 }
 function send(x){if(ws?.readyState===1)ws.send(JSON.stringify(x))}
@@ -15,6 +44,8 @@ $("code").oninput=e=>e.target.value=e.target.value.replace(/[^a-z0-9]/gi,"").toU
 function suit(id){return state.suits.find(s=>s.id===id)}
 function cardEl(c,opts={}){
   const s=suit(c.suitId), d=document.createElement("div"); d.className="card "+(opts.selectable?"selectable ":"")+(opts.selected?"selected ":"")+(opts.extraClass||"");
+  d.dataset.cardId=c.id;
+  if(opts.zone)d.dataset.zone=opts.zone;
   d.style.borderTop=`5px solid ${s.color}`; d.title=`${s.name} ${c.number}`;
   d.innerHTML=`<span class="corner tl" style="color:${s.color}">${c.number}</span><span class="number">${c.number}</span><span class="symbol" style="color:${s.color}">${s.symbol}</span><span class="corner br" style="color:${s.color}">${c.number}</span>`;
   if(opts.onclick)d.onclick=opts.onclick; return d;
@@ -43,14 +74,14 @@ function renderGame(){
   renderAllTableaus();
 
   $("hand").innerHTML=""; const canPlay=(state.status==="playing"||state.status==="final")&&state.currentPlayer===me;
-  mep.hand.forEach(c=>{const node=cardEl(c,{selectable:canPlay,onclick:()=>canPlay&&send({type:"play",cardId:c.id})}); if(canPlay)attachHandHover(c,node); $("hand").appendChild(node);});
+  mep.hand.forEach(c=>{const node=cardEl(c,{zone:"hand",selectable:canPlay,onclick:()=>canPlay&&send({type:"play",cardId:c.id})}); if(canPlay)attachHandHover(c,node); $("hand").appendChild(node);});
   $("handHint").textContent=canPlay?"HOVER TO PREVIEW · CLICK TO PLAY":state.status==="selection"?"SELECT 2 CARDS":"";
 
   if(state.status==="final"){
     const final=state.currentPlayer===me;
     if(final){
       $("hand").innerHTML="";
-      mep.hand.forEach(c=>{const node=cardEl(c,{selectable:true,onclick:()=>send({type:"finalPlay",cardId:c.id})}); attachHandHover(c,node,true); $("hand").appendChild(node);});
+      mep.hand.forEach(c=>{const node=cardEl(c,{zone:"hand",selectable:true,onclick:()=>send({type:"finalPlay",cardId:c.id})}); attachHandHover(c,node,true); $("hand").appendChild(node);});
       $("handHint").textContent="FINAL TURN · CLICK A CARD TO PLAY";
     } else {
       $("handHint").textContent="WAITING FOR FINAL TURNS";
@@ -63,7 +94,7 @@ function renderGame(){
 function renderProcession(){
   const el=$("procession"); el.innerHTML="";
   state.procession.forEach(c=>{
-    const node=cardEl(c); node.dataset.cardId=c.id; el.appendChild(node);
+    const node=cardEl(c,{zone:"procession"}); el.appendChild(node);
   });
 }
 function collectionPreview(played){
@@ -144,7 +175,7 @@ function renderAllTableaus(){
       const onePoint=controlled.has(s.id);
       stack.innerHTML=`<div class="stack-label" style="color:${s.color}"><span>${s.symbol}</span>${s.name}<small>${cards.length}</small>${onePoint?'<em class="one-point-badge">1 PT</em>':''}</div>`;
       const pile=document.createElement("div"); pile.className="stack-cards";
-      cards.forEach((c,i)=>{const n=cardEl(c,{extraClass:"stacked-card"}); n.style.setProperty("--stack-i",i); pile.appendChild(n)});
+      cards.forEach((c,i)=>{const n=cardEl(c,{zone:"tableau",extraClass:"stacked-card"}); n.style.setProperty("--stack-i",i); pile.appendChild(n)});
       stack.appendChild(pile); grid.appendChild(stack);
     });
     player.appendChild(grid); wrap.appendChild(player);
@@ -154,7 +185,7 @@ function renderSelection(mep){
   $("hand").innerHTML="";
   mep.hand.forEach(c=>{
     const sel=selected.has(c.id);
-    $("hand").appendChild(cardEl(c,{selectable:true,selected:sel,onclick:()=>{
+    $("hand").appendChild(cardEl(c,{zone:"hand",selectable:true,selected:sel,onclick:()=>{
       if(submittedSelection)return;
       if(selected.has(c.id))selected.delete(c.id); else if(selected.size<2)selected.add(c.id);
       renderGame();
