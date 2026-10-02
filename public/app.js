@@ -42,7 +42,7 @@ function renderGame(){
   renderProcession();
   renderAllTableaus();
 
-  $("hand").innerHTML=""; const canPlay=state.status==="playing"&&state.currentPlayer===me;
+  $("hand").innerHTML=""; const canPlay=(state.status==="playing"||state.status==="final")&&state.currentPlayer===me;
   mep.hand.forEach(c=>{const node=cardEl(c,{selectable:canPlay,onclick:()=>canPlay&&send({type:"play",cardId:c.id})}); if(canPlay)attachHandHover(c,node); $("hand").appendChild(node);});
   $("handHint").textContent=canPlay?"HOVER TO PREVIEW · CLICK TO PLAY":state.status==="selection"?"SELECT 2 CARDS":"";
 
@@ -50,7 +50,7 @@ function renderGame(){
     const final=state.currentPlayer===me;
     if(final){
       $("hand").innerHTML="";
-      mep.hand.forEach(c=>$ ("hand").appendChild(cardEl(c,{selectable:true,onclick:()=>send({type:"finalPlay",cardId:c.id})})));
+      mep.hand.forEach(c=>{const node=cardEl(c,{selectable:true,onclick:()=>send({type:"finalPlay",cardId:c.id})}); attachHandHover(c,node,true); $("hand").appendChild(node);});
       $("handHint").textContent="FINAL TURN · CLICK A CARD TO PLAY";
     } else {
       $("handHint").textContent="WAITING FOR FINAL TURNS";
@@ -80,9 +80,9 @@ function collectionPreview(played){
   });
   return {protectedCount,pickupIds,protectedStart};
 }
-function attachHandHover(card,node){
+function attachHandHover(card,node,allowFinal=false){
   node.addEventListener("mouseenter",()=>{
-    if(!state || state.status!=="playing" || state.currentPlayer!==me)return;
+    if(!state || (state.status!=="playing" && !(allowFinal && state.status==="final")) || state.currentPlayer!==me)return;
     clearPreview();
     const preview=collectionPreview(card);
     const cards=Array.from(document.querySelectorAll("#procession .card"));
@@ -138,9 +138,11 @@ function renderAllTableaus(){
     const groups=Object.fromEntries(state.suits.map(s=>[s.id,[]]));
     p.tableau.forEach(c=>groups[c.suitId].push(c));
     const grid=document.createElement("div"); grid.className="tableau-stacks";
+    const controlled=new Set(Object.entries(state.controllers||{}).filter(([,ids])=>ids.includes(p.id)).map(([id])=>id));
     state.suits.forEach(s=>{
       const cards=groups[s.id], stack=document.createElement("div"); stack.className="suit-stack";
-      stack.innerHTML=`<div class="stack-label" style="color:${s.color}"><span>${s.symbol}</span>${s.name}<small>${cards.length}</small></div>`;
+      const onePoint=controlled.has(s.id);
+      stack.innerHTML=`<div class="stack-label" style="color:${s.color}"><span>${s.symbol}</span>${s.name}<small>${cards.length}</small>${onePoint?'<em class="one-point-badge">1 PT</em>':''}</div>`;
       const pile=document.createElement("div"); pile.className="stack-cards";
       cards.forEach((c,i)=>{const n=cardEl(c,{extraClass:"stacked-card"}); n.style.setProperty("--stack-i",i); pile.appendChild(n)});
       stack.appendChild(pile); grid.appendChild(stack);
@@ -179,9 +181,13 @@ function showEndgameAnnouncement(){
 }
 function showGameOver(){
   $("modal").classList.add("hidden");
-  const rows=state.players.map(p=>`<div class="score-row"><span>${esc(p.name)}${p.id===me?" · YOU":""}</span><span class="score">${p.score}</span></div>`).join("");
+  const rows=state.players.map(p=>{
+    const onePoint=state.suits.filter(s=>(state.controllers?.[s.id]||[]).includes(p.id));
+    const suitsText=onePoint.length?onePoint.map(s=>`<span class="score-suit" style="border-color:${s.color};color:${s.color}">${s.symbol} ${s.name}</span>`).join(""):"<span class=\"score-suit none\">None</span>";
+    return `<div class="gameover-player"><div class="score-row"><span>${esc(p.name)}${p.id===me?" · YOU":""}</span><span class="score">${p.score}</span></div><div class="one-point-line"><b>1-point suits:</b> ${suitsText}</div></div>`;
+  }).join("");
   const panel=$("gameOverPanel");
-  panel.innerHTML=`<h3>Game over</h3><p>Final scores — lowest total wins.</p><div class="gameover-scores">${rows}</div><div class="modal-actions"><button onclick="location.reload()">New game</button></div>`;
+  panel.innerHTML=`<h3>Game over</h3><p>Final scores. Suits shown below are controlled by that player and score 1 point per card.</p><div class="gameover-scores">${rows}</div><div class="modal-actions"><button onclick="location.reload()">New game</button></div>`;
   panel.classList.remove("hidden");
 }
 function esc(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
