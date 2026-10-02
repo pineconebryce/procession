@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Procession — Card Game</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">✦</span><div><b>PROCESSION</b><small>Six suits. One procession. Lowest score wins.</small></div></div>
+    <div id="roomBadge" class="room-badge hidden"></div>
+  </header>
+
+  <main>
+    <section id="lobby" class="screen">
+      <div class="hero">
+        <div class="eyebrow">MULTIPLAYER CARD GAME</div>
+        <h1>Build your <em>Procession.</em></h1>
+        <p>Collect carefully. Every point hurts. Control of a suit can turn high cards into ones.</p>
+      </div>
+      <div class="panel lobby-panel">
+        <label>Your name<input id="name" maxlength="20" placeholder="Enter a name"></label>
+        <div class="lobby-actions">
+          <button id="createBtn" class="primary">Create room</button>
+          <div class="or">or</div>
+          <div class="join-row"><input id="code" maxlength="4" placeholder="ROOM CODE"><button id="joinBtn">Join</button></div>
+        </div>
+        <div id="lobbyError" class="error"></div>
+      </div>
+      <div class="suits" id="suits"></div>
+    </section>
+
+    <section id="room" class="screen hidden">
+      <div class="room-head">
+        <div><div class="eyebrow">ROOM</div><h2 id="roomCodeTitle">----</h2></div>
+        <button id="startBtn" class="primary">Start game</button>
+      </div>
+      <div class="panel">
+        <div id="playersList" class="players-list"></div>
+        <p class="muted">Share the room code with your opponents. 2–6 players.</p>
+      </div>
+    </section>
+
+    <section id="game" class="screen hidden">
+      <div id="statusBar" class="status-bar"></div>
+      <div class="game-layout">
+        <aside class="side-panel">
+          <div class="section-title">PLAYERS</div>
+          <div id="scoreboard"></div>
+          <div class="section-title">PROCESSION</div>
+          <div class="mini-rules">
+            <div><b>Play X</b><span>Protect the last X existing cards.</span></div>
+            <div><b>Collect</b><span>Unprotected cards matching your suit OR ≤ X.</span></div>
+            <div><b>Goal</b><span>Keep your score low.</span></div>
+          </div>
+        </aside>
+        <div class="table">
+          <div class="table-title"><span>THE PROCESSION</span><span id="deckCount"></span></div>
+          <div id="procession" class="procession"></div>
+          <div class="table-title"><span>YOUR TABLEAU</span><span id="tableauScore"></span></div>
+          <div id="tableau" class="tableau"></div>
+          <div class="table-title"><span>YOUR HAND</span><span id="handHint"></span></div>
+          <div id="hand" class="hand"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="modal" class="modal hidden"><div class="modal-card"><div id="modalTitle"></div><div id="modalBody"></div><div id="modalActions"></div></div></div>
+</div>
+<script src="/app.js"></script>
+</body>
+</html>
