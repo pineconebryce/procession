@@ -181,8 +181,9 @@ function clearPreview(){
 }
 function renderAllTableaus(){
   const wrap=$("tableaus"); wrap.innerHTML="";
-  state.players.forEach(p=>{
-    const player=document.createElement("div"); player.className="tableau-player";
+  const ordered=[...state.players].sort((a,b)=>a.id===me?-1:b.id===me?1:0);
+  ordered.forEach(p=>{
+    const player=document.createElement("div"); player.className=`tableau-player ${p.id===me?"my-tableau":""}`;
     player.innerHTML=`<div class="tableau-player-head"><b>${esc(p.name)}${p.id===me?" · YOU":""}</b><span>${p.tableau.length} cards · ${p.score} points</span></div>`;
     const groups=Object.fromEntries(state.suits.map(s=>[s.id,[]]));
     p.tableau.forEach(c=>groups[c.suitId].push(c));
@@ -198,6 +199,14 @@ function renderAllTableaus(){
     });
     player.appendChild(grid); wrap.appendChild(player);
   });
+}
+function suitPointsForPlayer(p){
+  const controlled=new Set(Object.entries(state.controllers||{}).filter(([,ids])=>ids.includes(p.id)).map(([id])=>id));
+  return Object.fromEntries(state.suits.map(s=>{
+    const cards=p.tableau.filter(c=>c.suitId===s.id);
+    const points=controlled.has(s.id)?cards.length:cards.reduce((sum,c)=>sum+Number(c.number),0);
+    return [s.id,{count:cards.length,points,controlled:controlled.has(s.id)}];
+  }));
 }
 function renderSelection(mep){
   $("hand").innerHTML="";
@@ -229,21 +238,25 @@ function showEndgameAnnouncement(){
   $("continueEndgame").onclick=()=>$("modal").classList.add("hidden");
 }
 function showGameOver(){
-  $("modal").classList.add("hidden");
   const minScore=Math.min(...state.players.map(p=>p.score));
-  const rows=state.players.map(p=>{
+  const ordered=[...state.players].sort((a,b)=>a.id===me?-1:b.id===me?1:0);
+  const rows=ordered.map(p=>{
     const winner=p.score===minScore;
-    const onePoint=state.suits.filter(s=>(state.controllers?.[s.id]||[]).includes(p.id));
-    const suitsText=onePoint.length?onePoint.map(s=>`<span class="score-suit" style="border-color:${s.color};color:${s.color}">${s.symbol} ${s.name}</span>`).join(""):'<span class="score-suit none">None</span>';
+    const points=suitPointsForPlayer(p);
     const result=winner
       ? `<div class="result-banner winner-banner">WINNER!</div>`
       : `<div class="result-banner rough-banner">THAT'S ROUGH, BUDDY</div>`;
-    return `<div class="gameover-player ${winner?"is-winner":""}">${result}<div class="score-row"><span>${esc(p.name)}${p.id===me?" · YOU":""}</span><span class="score">${p.score}</span></div><div class="one-point-line"><b>1-point suits:</b> ${suitsText}</div></div>`;
+    const suitRows=state.suits.map(s=>{
+      const d=points[s.id];
+      return `<div class="final-suit-row ${d.controlled?"controlled":""}"><span class="final-suit-name" style="color:${s.color}">${s.symbol} ${s.name}</span><span>${d.controlled?"WON · ":""}${d.points} pts</span></div>`;
+    }).join("");
+    return `<div class="gameover-player ${winner?"is-winner":""} ${p.id===me?"my-result":""}">${result}<div class="final-player-head"><b>${esc(p.name)}${p.id===me?" · YOU":""}</b><strong>${p.score} TOTAL</strong></div><div class="final-suits"><div class="final-suits-title">SUIT POINTS</div>${suitRows}</div></div>`;
   }).join("");
   const panel=$("gameOverPanel");
-  panel.innerHTML=`<h3>Game over</h3><p>Final scores. Controlled suits score 1 point per card.</p><div class="gameover-scores">${rows}</div><div class="modal-actions"><button onclick="location.reload()">New game</button></div>`;
+  panel.innerHTML=`<h3>Final Score</h3><p>Winning a suit makes every card of that suit worth 1 point.</p><div class="gameover-scores">${rows}</div><div class="modal-actions"><button onclick="location.reload()">New game</button></div>`;
   panel.classList.remove("hidden");
 }
+
 function esc(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function renderSuits(){ $("suits").innerHTML=[["red","Red","◆"],["blue","Blue","●"],["green","Green","▲"],["yellow","Yellow","★"],["purple","Purple","⬟"],["orange","Orange","✚"]].map(x=>`<div class="suit-chip"><span class="sym">${x[2]}</span><span>${x[1]}</span></div>`).join("")}
 renderSuits(); connect();
