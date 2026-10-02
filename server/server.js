@@ -85,11 +85,13 @@ function snapshot(room, meId) {
     deckCount:room.deck.length, endGame:room.endGame, winner:room.winner,
     message:room.message,
     suits:SUITS,
+    selectionCount:room.players.filter(p=>p.selected?.length===2).length,
     players:room.players.map(p=>({
       id:p.id,name:p.name,connected:p.connected,handCount:p.hand.length,
       hand:p.id===meId?p.hand.map(publicCard):undefined,
       tableau:p.tableau.map(publicCard),
-      score:scores(room)[p.id]
+      score:scores(room)[p.id],
+      selectionSubmitted:p.selected?.length===2
     })),
     controllers:controllers(room)
   };
