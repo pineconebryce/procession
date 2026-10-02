@@ -46,15 +46,14 @@ async function copyInvite(){
   url.hash="";
   try{
     await navigator.clipboard.writeText(url.toString());
-    const b=$("inviteBtn"),g=$("gameInviteBtn");
-    [b,g].forEach(x=>{if(x){const old=x.textContent;x.textContent="Invite link copied!";setTimeout(()=>x.textContent=old,1600);}});
+    const b=$("inviteBtn");
+    if(b){const old=b.textContent;b.textContent="Invite link copied!";setTimeout(()=>b.textContent=old,1600);}
   }catch(e){
     const fallback=prompt("Copy this invite link:",url.toString());
     if(fallback!==null){} 
   }
 }
 $("inviteBtn").onclick=copyInvite;
-$("gameInviteBtn").onclick=copyInvite;
 const roomFromUrl=new URLSearchParams(location.search).get("room");
 if(roomFromUrl){$("code").value=roomFromUrl.toUpperCase().slice(0,4);}
 $("code").oninput=e=>e.target.value=e.target.value.replace(/[^a-z0-9]/gi,"").toUpperCase();
@@ -63,6 +62,8 @@ function suit(id){return state.suits.find(s=>s.id===id)}
 function cardEl(c,opts={}){
   const s=suit(c.suitId), d=document.createElement("div"); d.className="card "+(opts.selectable?"selectable ":"")+(opts.selected?"selected ":"")+(opts.extraClass||"");
   d.dataset.cardId=c.id;
+  d.dataset.suit=c.suitId;
+  d.dataset.symbol=s.symbol;
   if(opts.zone)d.dataset.zone=opts.zone;
   d.style.borderTop=`5px solid ${s.color}`; d.title=`${s.name} ${c.number}`;
   d.innerHTML=`<span class="corner tl" style="color:${s.color}">${c.number}</span><span class="number">${c.number}</span><span class="symbol" style="color:${s.color}">${s.symbol}</span><span class="corner br" style="color:${s.color}">${c.number}</span>`;
@@ -114,6 +115,11 @@ function renderProcession(){
   state.procession.forEach(c=>{
     const node=cardEl(c,{zone:"procession"}); el.appendChild(node);
   });
+  const slot=document.createElement("div");
+  slot.className="procession-slot";
+  slot.setAttribute("aria-label","Next card enters here");
+  slot.innerHTML=`<span>+</span>`;
+  el.appendChild(slot);
 }
 function collectionPreview(played){
   const procession=state.procession;
@@ -244,7 +250,8 @@ function showGameOver(){
     const winner=p.score===minScore;
     const isMe=p.id===me;
     const points=suitPointsForPlayer(p);
-    const placement=`${index+1}${index%10===0&&index!==10?"th":index%10===1&&index!==11?"st":index%10===2&&index!==12?"nd":"th"}`;
+    const n=index+1;
+    const placement=n===1?"1st":n===2?"2nd":n===3?"3rd":`${n}th`;
     const result=isMe
       ? `<div class="result-banner ${winner?"winner-banner":"rough-banner"}">${winner?"WINNER!":"THAT'S ROUGH, BUDDY"}</div>`
       : `<div class="placement-label">${placement}</div>`;
