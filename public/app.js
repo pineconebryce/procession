@@ -71,13 +71,14 @@ function collectionPreview(played){
   const existingCount=procession.length;
   const x=Math.max(Number(played.number)||0,0);
   const protectedCount=Math.min(x,existingCount);
-  const firstCollectibleIndex=protectedCount;
+  const protectedStart=Math.max(0,existingCount-protectedCount);
   const pickupIds=new Set();
   procession.forEach((card,index)=>{
-    // Protected cards are never eligible for pickup, regardless of suit/number.
-    if(index >= firstCollectibleIndex && (card.suitId===played.suitId || Number(card.number)<=x)) pickupIds.add(card.id);
+    // The protected cards are the LAST X cards that were already in the Procession.
+    // Only unprotected cards can ever be picked up.
+    if(index < protectedStart && (card.suitId===played.suitId || Number(card.number)<=x)) pickupIds.add(card.id);
   });
-  return {protectedCount,pickupIds};
+  return {protectedCount,pickupIds,protectedStart};
 }
 function attachHandHover(card,node){
   node.addEventListener("mouseenter",()=>{
