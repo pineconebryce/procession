@@ -132,33 +132,75 @@ function simulatePickup(room, played) {
   return {collected, protectedCount};
 }
 
-function botMoveValue(room,p,card,difficulty) {
-  const sim=simulatePickup(room,card);
-  const collected=sim.collected;
-  const counts=suitCounts(p);
-  let value=0;
-  if(difficulty==="easy") value=collected.length*8 - card.number*0.3 + Math.random()*8;
-  else {
-    value=collected.length*10;
-    value-=collected.reduce((sum,c)=>sum+c.number,0)*0.35;
-    value-=card.number*0.7;
-    for(const c of collected) {
-      const next=counts[c.suitId]+1;
-      if(next>=2) value+=5;
-    }
-    const remaining=room.deck.length;
-    value += Math.max(0,6-remaining)*0.5;
-    if(difficulty==="hard") {
-      const uniqueBefore=new Set(p.tableau.map(c=>c.suitId)).size;
-      const uniqueAfter=new Set([...p.tableau,...collected].map(c=>c.suitId)).size;
-      value += (uniqueAfter-uniqueBefore)*4;
-      if(uniqueAfter===6) value+=20;
-      value -= card.number*0.15;
-    } else value += Math.random()*2;
+function projectedBotScore(room, p, collected) {
+  const tableaux = new Map(room.players.map(x => [x.id, x.tableau.slice()]));
+  tableaux.set(p.id, [...p.tableau, ...collected]);
+  const counts = new Map();
+  for (const x of room.players) {
+    const m = Object.fromEntries(SUITS.map(s => [s.id, 0]));
+    for (const c of tableaux.get(x.id)) m[c.suitId]++;
+    counts.set(x.id, m);
   }
-  return value;
+  const ctrl = Object.fromEntries(SUITS.map(s => [s.id, []]));
+  for (const s of SUITS) {
+    const max = Math.max(...room.players.map(x => counts.get(x.id)[s.id]));
+    if (max > 0) ctrl[s.id] = room.players.filter(x => counts.get(x.id)[s.id] === max).map(x => x.id);
+  }
+  let total = 0;
+  for (const c of tableaux.get(p.id)) total += ctrl[c.suitId].includes(p.id) ? 1 : c.number;
+  return total;
 }
 
+function suitControlSavings(room, p, collected) {
+  if (!collected.length) return 0;
+  const before = projectedBotScore(room, p, []);
+  const after = projectedBotScore(room, p, collected);
+  const printed = collected.reduce((sum, c) => sum + c.number, 0);
+  return printed - (after - before);
+}
+
+function opponentPickupRisk(room, played) {
+  const sim = simulatePickup(room, played);
+  const protectedStart = Math.max(0, room.procession.length - sim.protectedCount);
+  const exposed = room.procession.slice(0, protectedStart)
+    .filter(c => !sim.collected.some(x => x.id === c.id));
+  return exposed.reduce((sum, c) => sum + c.number, 0);
+}
+
+function botMoveValue(room, p, card, difficulty) {
+  const sim = simulatePickup(room, card);
+  const collected = sim.collected;
+  const count = collected.length;
+  const printed = collected.reduce((sum, c) => sum + c.number, 0);
+  const savings = suitControlSavings(room, p, collected);
+
+  if (difficulty === "easy") {
+    return count === 0
+      ? 100000 + Math.random() * 500
+      : -count * 1000 - printed * 20 + savings * 3 + Math.random() * 5;
+  }
+
+  if (count === 0) {
+    let value = 1000000;
+    // Among safe plays, favor stronger protection and avoid leaving valuable
+    // exposed cards for the next player when possible.
+    value += Math.min(card.number, room.procession.length) * 120;
+    value += opponentPickupRisk(room, card) * 2;
+    value += (10 - card.number) * 0.5;
+    return value;
+  }
+
+  let value = -count * 100000;
+  value -= printed * 1000;
+  value += savings * (difficulty === "hard" ? 220 : 90);
+
+  const suitCountsPicked = Object.fromEntries(SUITS.map(s => [s.id, 0]));
+  for (const c of collected) suitCountsPicked[c.suitId]++;
+  const concentration = Math.max(...Object.values(suitCountsPicked));
+  value += concentration * (difficulty === "hard" ? 70 : 25);
+  value -= card.number * (difficulty === "hard" ? 2 : 0.8);
+  return value;
+}
 function chooseBotCard(room,p) {
   if(!p.hand.length) return null;
   const difficulty=p.botDifficulty||"normal";

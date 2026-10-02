@@ -116,3 +116,19 @@ button{border:1px solid #4b4941;background:#252520;color:var(--text);padding:11p
 /* v15 room controls, home navigation, and bot styling */
 .home-brand{appearance:none;border:0;background:transparent;padding:4px 0;color:var(--text);display:flex;gap:12px;align-items:center;text-align:left;border-radius:8px}.home-brand:hover{background:transparent;color:var(--text)}.home-brand:focus-visible{outline:2px solid var(--gold);outline-offset:4px}.home-brand .brand-mark{font-size:25px;color:var(--gold)}.home-brand b{display:block;letter-spacing:.18em;font-size:14px}.bot-controls{display:flex;gap:6px;align-items:center}.bot-controls select{background:#10100e;border:1px solid #4b4941;color:var(--text);padding:10px 10px;border-radius:10px;font:inherit;font-size:12px}.bot-tile{border-color:#4b4b3e}.bot-dot{background:#b6a15a}.player-role{padding:5px 0 0;font-size:10px;letter-spacing:.06em}.room-actions{flex-wrap:wrap}
 @media(max-width:800px){.bot-controls{width:100%;justify-content:flex-end}.bot-controls select{flex:1}}
+
+
+/* v16 homepage: quiet repeating suit pattern, inspired by luxury textile motifs. */
+#lobby{position:relative;isolation:isolate;overflow:hidden}
+#lobby::before{
+  content:"";
+  position:absolute;
+  inset:-90px;
+  z-index:-1;
+  opacity:.18;
+  pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cg fill='none' stroke='%23302f2a' stroke-width='1.4' opacity='.9'%3E%3Cpath d='M30 20l10 10-10 10-10-10z'/%3E%3Ccircle cx='90' cy='30' r='10'/%3E%3Cpath d='M150 20l10 18h-20z'/%3E%3Cpath d='M30 95l3 7 8 1-6 5 2 8-7-4-7 4 2-8-6-5 8-1z'/%3E%3Cpath d='M90 84l11 11-11 11-11-11z'/%3E%3Cpath d='M150 83h7v7h7v7h-7v7h-7v-7h-7v-7h7z'/%3E%3Cpath d='M30 160l10 10-10 10-10-10z'/%3E%3Ccircle cx='90' cy='155' r='10'/%3E%3Cpath d='M150 145l10 18h-20z'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat:repeat;
+  background-size:180px 180px;
+}
+#lobby>*{position:relative;z-index:1}
