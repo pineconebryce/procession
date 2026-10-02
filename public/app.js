@@ -17,6 +17,18 @@ function animateCardMoves(before){
       const r=el.getBoundingClientRect();
       const dx=old.left-r.left, dy=old.top-r.top;
       if(Math.abs(dx)<2 && Math.abs(dy)<2)return;
+
+      // Use a FLIP animation for cards that remain in the Procession.
+      // This makes surviving cards visibly slide into the spaces left by pickups.
+      if(old.zone==='procession' && el.dataset.zone==='procession'){
+        el.animate(
+          [{transform:`translate(${dx}px,${dy}px)`},{transform:'translate(0,0)'}],
+          {duration:650,easing:'cubic-bezier(.22,.8,.24,1)',fill:'none'}
+        );
+        return;
+      }
+
+      // Preserve the existing smooth movement for cards traveling between areas.
       el.style.transition='none';
       el.style.transform=`translate(${dx}px,${dy}px)`;
       el.style.zIndex='1200';
