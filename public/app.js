@@ -68,27 +68,21 @@ function renderProcession(){
 }
 function collectionPreview(played){
   const existingCount=state.procession.length;
-  const safe=new Set(), collect=new Set(), protectedByNumber=new Set();
   const protectedCount=Math.min(Math.max(played.number,0),existingCount);
-  const protectedStart=existingCount-protectedCount;
-  state.procession.forEach((c,i)=>{
-    if(i>=protectedStart && protectedCount>0){
-      safe.add(c.id);
-      protectedByNumber.add(c.id);
-    } else if(c.suitId===played.suitId || c.number<=played.number) collect.add(c.id);
-    else safe.add(c.id);
-  });
-  return {safe,collect,protectedByNumber,protectedCount};
+  return {protectedCount};
 }
 function attachHandHover(card,node){
   node.addEventListener("mouseenter",()=>{
     if(state.status!=="playing" || state.currentPlayer!==me)return;
     const preview=collectionPreview(card);
     document.querySelectorAll("#procession .card").forEach(x=>{
-      x.classList.remove("preview-safe","preview-collect");
-      if(preview.collect.has(x.dataset.cardId))x.classList.add("preview-collect");
-      else if(preview.safe.has(x.dataset.cardId))x.classList.add("preview-safe");
+      x.classList.remove("preview-safe","preview-collect","preview-protected");
     });
+    if(preview.protectedCount){
+      const cards=[...document.querySelectorAll("#procession .card")];
+      cards.slice(Math.max(0,cards.length-preview.protectedCount))
+        .forEach(x=>x.classList.add("preview-protected"));
+    }
     const key=$("previewKey");
     key.textContent=preview.protectedCount
       ? `Yellow bracket = ${preview.protectedCount} card${preview.protectedCount===1?"":"s"} excluded by the number ${card.number}.`
@@ -121,7 +115,7 @@ function removeProtectionBracket(){
   $("procession")?.querySelector(".protection-bracket")?.remove();
 }
 function clearPreview(){
-  document.querySelectorAll("#procession .card").forEach(x=>x.classList.remove("preview-safe","preview-collect"));
+  document.querySelectorAll("#procession .card").forEach(x=>x.classList.remove("preview-safe","preview-collect","preview-protected"));
   document.querySelectorAll("#hand .card").forEach(x=>x.classList.remove("preview-source"));
   removeProtectionBracket();
   $("previewKey").classList.add("hidden");
