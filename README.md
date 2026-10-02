@@ -44,3 +44,9 @@ The current proposed visual mapping is:
 - Orange — ✚ Cross
 
 The rules engine identifies suits by stable IDs, not by their visual appearance.
+
+## v15 additions
+- Host can add Easy, Normal, or Hard bots from the room lobby before starting.
+- Bots use the same server-authoritative game rules as human players and participate in final turns and final selection.
+- The Procession header button returns to the home screen.
+- A disconnected human can rejoin an existing room by entering the same room code and the same name.

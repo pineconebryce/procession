@@ -1,4 +1,4 @@
-let ws=null, me=null, state=null, selected=new Set(), submittedSelection=false, lastStatus=null, lastEndKey=null;
+let ws=null, me=null, state=null, selected=new Set(), submittedSelection=false, lastStatus=null, lastEndKey=null, manualHome=false;
 
 function captureCardPositions(){
   const map=new Map();
@@ -30,15 +30,24 @@ function animateCardMoves(before){
 }
 
 const $=id=>document.getElementById(id);
-function connect(){ ws=new WebSocket((location.protocol==="https:"?"wss://":"ws://")+location.host);
+function connect(){ manualHome=false; ws=new WebSocket((location.protocol==="https:"?"wss://":"ws://")+location.host);
   ws.onmessage=e=>{const m=JSON.parse(e.data); if(m.type==="error"){ $("lobbyError").textContent=m.message; return;} if(m.type==="joined"){me=m.playerId; $("lobbyError").textContent=""; show("room"); $("roomCodeTitle").textContent=m.code; $("roomBadge").textContent=m.code; $("roomBadge").classList.remove("hidden");} if(m.type==="state"){const previousStatus=state?.status; const before=captureCardPositions(); state=m.state; if(state.status!=="selection"){selected.clear(); submittedSelection=false;} render(); animateCardMoves(before); if(state.status==="final" && previousStatus!=="final") showEndgameAnnouncement();}};
-  ws.onclose=()=>{if(state) setTimeout(connect,1200)};
+  ws.onclose=()=>{if(!manualHome && state) setTimeout(connect,1200)};
 }
 function send(x){if(ws?.readyState===1)ws.send(JSON.stringify(x))}
 function show(id){["lobby","room","game"].forEach(x=>$(x).classList.toggle("hidden",x!==id))}
 $("createBtn").onclick=()=>{const n=$("name").value.trim()||"Player";send({type:"create",name:n})};
 $("joinBtn").onclick=()=>{const n=$("name").value.trim()||"Player",c=$("code").value.trim().toUpperCase();send({type:"join",name:n,code:c})};
 $("startBtn").onclick=()=>send({type:"start"});
+$("addBotBtn").onclick=()=>send({type:"addBot",difficulty:$("botDifficulty").value});
+$("homeBtn").onclick=()=>{
+  manualHome=true;
+  state=null; me=null; selected.clear(); submittedSelection=false; lastEndKey=null;
+  if(ws){try{ws.close();}catch(e){} ws=null;}
+  $("roomBadge").classList.add("hidden");
+  $("code").value="";
+  show("lobby");
+};
 async function copyInvite(){
   if(!state?.code)return;
   const url=new URL(location.href);
@@ -76,8 +85,15 @@ function render(){
 }
 function renderRoom(){
   $("roomCodeTitle").textContent=state.code; $("roomBadge").textContent=state.code;
+  const host=state.players[0]?.id===me;
   $("startBtn").disabled=state.players.length<2;
-  $("playersList").innerHTML=state.players.map((p,i)=>`<div class="player-tile ${i===0?"host":""}"><span class="player-dot"></span><b>${esc(p.name)}</b>${i===0?"<div class='muted' style='padding:5px 0 0'>Host</div>":""}</div>`).join("");
+  $("addBotBtn").disabled=!host || state.players.length>=6;
+  $("botControls").classList.toggle("hidden",!host);
+  $("playersList").innerHTML=state.players.map((p,i)=>{
+    const bot=p.isBot;
+    const label=bot?`BOT · ${(p.botDifficulty||"normal").toUpperCase()}`:(i===0?"HOST":"PLAYER");
+    return `<div class="player-tile ${i===0?"host":""} ${bot?"bot-tile":""}"><span class="player-dot ${bot?"bot-dot":""}"></span><b>${esc(p.name)}</b><div class="muted player-role">${label}${!p.connected&&!bot?" · DISCONNECTED":""}</div></div>`;
+  }).join("");
 }
 function renderGame(){
   const oldConfirm=document.getElementById("confirmSelect");

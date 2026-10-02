@@ -39,7 +39,7 @@ function makeCode() {
 
 function freshRoom() {
   return { code: makeCode(), status:"lobby", players:[], procession:[], deck:[], currentPlayer:null,
-    turnNumber:0, endGame:null, winner:null, message:"Waiting for players." };
+    turnNumber:0, endGame:null, winner:null, message:"Waiting for players.", botTimers:new Map() };
 }
 
 function publicCard(c) { return c ? {id:c.id,suitId:c.suitId,number:c.number} : null; }
@@ -87,7 +87,7 @@ function snapshot(room, meId) {
     suits:SUITS,
     selectionCount:room.players.filter(p=>p.selected?.length===2).length,
     players:room.players.map(p=>({
-      id:p.id,name:p.name,connected:p.connected,handCount:p.hand.length,
+      id:p.id,name:p.name,connected:p.connected,isBot:!!p.isBot,botDifficulty:p.botDifficulty||null,handCount:p.hand.length,
       hand:p.id===meId?p.hand.map(publicCard):undefined,
       tableau:p.tableau.map(publicCard),
       score:scores(room)[p.id],
@@ -103,6 +103,92 @@ function broadcast(room) {
 
 function activePlayers(room) { return room.players.filter(p=>p.connected); }
 
+function scheduleBot(room, playerId, delay=850) {
+  const old=room.botTimers.get(playerId);
+  if(old) clearTimeout(old);
+  const timer=setTimeout(()=>{
+    room.botTimers.delete(playerId);
+    const p=room.players.find(x=>x.id===playerId);
+    if(!p || !p.isBot) return;
+    if(room.status==="playing" && room.currentPlayer===p.id) {
+      const cardId=chooseBotCard(room,p);
+      if(cardId) { resolvePlay(room,p,cardId); broadcast(room); }
+    } else if(room.status==="final" && room.currentPlayer===p.id) {
+      const cardId=chooseBotCard(room,p);
+      if(cardId) { finalPlay(room,p,cardId); broadcast(room); }
+    } else if(room.status==="selection" && !p.selected?.length) {
+      chooseBotSelection(room,p); broadcast(room);
+    }
+  }, delay);
+  room.botTimers.set(playerId,timer);
+}
+
+function simulatePickup(room, played) {
+  const existing=room.procession.length;
+  const x=played.number;
+  const protectedCount=Math.min(x,existing);
+  const protectedStart=Math.max(0,existing-protectedCount);
+  const collected=room.procession.slice(0,protectedStart).filter(c=>c.suitId===played.suitId || c.number<=x);
+  return {collected, protectedCount};
+}
+
+function botMoveValue(room,p,card,difficulty) {
+  const sim=simulatePickup(room,card);
+  const collected=sim.collected;
+  const counts=suitCounts(p);
+  let value=0;
+  if(difficulty==="easy") value=collected.length*8 - card.number*0.3 + Math.random()*8;
+  else {
+    value=collected.length*10;
+    value-=collected.reduce((sum,c)=>sum+c.number,0)*0.35;
+    value-=card.number*0.7;
+    for(const c of collected) {
+      const next=counts[c.suitId]+1;
+      if(next>=2) value+=5;
+    }
+    const remaining=room.deck.length;
+    value += Math.max(0,6-remaining)*0.5;
+    if(difficulty==="hard") {
+      const uniqueBefore=new Set(p.tableau.map(c=>c.suitId)).size;
+      const uniqueAfter=new Set([...p.tableau,...collected].map(c=>c.suitId)).size;
+      value += (uniqueAfter-uniqueBefore)*4;
+      if(uniqueAfter===6) value+=20;
+      value -= card.number*0.15;
+    } else value += Math.random()*2;
+  }
+  return value;
+}
+
+function chooseBotCard(room,p) {
+  if(!p.hand.length) return null;
+  const difficulty=p.botDifficulty||"normal";
+  if(difficulty==="easy" && Math.random()<0.2) return p.hand[Math.floor(Math.random()*p.hand.length)].id;
+  let best=p.hand[0], bestValue=-Infinity;
+  for(const card of p.hand) {
+    const v=botMoveValue(room,p,card,difficulty);
+    if(v>bestValue){bestValue=v;best=card;}
+  }
+  return best.id;
+}
+
+function chooseBotSelection(room,p) {
+  if(p.selected?.length===2) return;
+  const difficulty=p.botDifficulty||"normal";
+  const ranked=[...p.hand].sort((a,b)=>{
+    const va=botMoveValue(room,p,a,difficulty), vb=botMoveValue(room,p,b,difficulty);
+    return vb-va;
+  });
+  p.selected=ranked.slice(0,2).map(c=>c.id);
+  if(room.players.every(x=>x.selected?.length===2)) {
+    for(const x of room.players) for(const id of x.selected) {
+      const i=x.hand.findIndex(c=>c.id===id); if(i>=0) x.tableau.push(x.hand.splice(i,1)[0]);
+    }
+    const sc=scores(room), min=Math.min(...Object.values(sc));
+    room.winner=room.players.filter(x=>sc[x.id]===min).map(x=>x.name);
+    room.status="gameover"; room.message=`Game over. Lowest score: ${min}.`;
+  }
+}
+
 function beginGame(room) {
   if(room.players.length<2 || room.players.length>6) return;
   const deck=newDeck();
@@ -112,6 +198,7 @@ function beginGame(room) {
   room.status="playing"; room.currentPlayer=room.players[0].id; room.turnNumber=1;
   room.message=`${room.players[0].name}'s turn.`;
   broadcast(room);
+  if(room.players[0].isBot) scheduleBot(room,room.players[0].id);
 }
 
 function nextNormalPlayer(room, afterId) {
@@ -128,7 +215,8 @@ function triggerEnd(room, reason, triggerId) {
   room.endGame={reason,triggerId, finalTurnPlayers:room.players.filter(p=>p.id!==triggerId).map(p=>p.id), done:[]};
   room.currentPlayer=room.endGame.finalTurnPlayers[0] || null;
   room.message=`End game: ${reason==="SIX_SUITS"?"six suits collected":"draw pile exhausted"}.`;
-  if(!room.currentPlayer) finishFinalTurns(room);
+  if(room.currentPlayer) { const first=room.players.find(x=>x.id===room.currentPlayer); if(first?.isBot) scheduleBot(room,first.id,1000); }
+  else finishFinalTurns(room);
 }
 
 function finishFinalTurns(room) {
@@ -136,6 +224,7 @@ function finishFinalTurns(room) {
   room.currentPlayer=null;
   room.players.forEach(p=>p.selected=[]);
   room.message="Choose 2 cards. Selections are revealed simultaneously.";
+  room.players.filter(p=>p.isBot).forEach(p=>scheduleBot(room,p.id,700));
 }
 
 function resolvePlay(room, p, cardId) {
@@ -182,6 +271,8 @@ function resolvePlay(room, p, cardId) {
   room.currentPlayer=nextNormalPlayer(room,p.id);
   room.turnNumber++;
   room.message=`${room.players.find(x=>x.id===room.currentPlayer).name}'s turn.`;
+  const next=room.players.find(x=>x.id===room.currentPlayer);
+  if(next?.isBot) scheduleBot(room,next.id);
   return null;
 }
 
@@ -210,10 +301,24 @@ function finalPlay(room,p,cardId) {
   if(remaining.length) {
     room.currentPlayer=remaining[0];
     room.message=`Final turn: ${room.players.find(x=>x.id===room.currentPlayer).name}.`;
+    const next=room.players.find(x=>x.id===room.currentPlayer);
+    if(next?.isBot) scheduleBot(room,next.id);
   } else finishFinalTurns(room);
 }
 
+function addBot(room, p, difficulty) {
+  if(p.id!==room.players[0].id) return "Only the host can add bots.";
+  if(room.status!=="lobby") return "Bots can only be added before the game starts.";
+  if(room.players.length>=6) return "Room is full.";
+  const level=["easy","normal","hard"].includes(difficulty)?difficulty:"normal";
+  let n=1; while(room.players.some(x=>x.name===`Bot ${n}`)) n++;
+  room.players.push({id:crypto.randomUUID(),name:`Bot ${n}`,ws:null,hand:[],tableau:[],connected:true,selected:[],isBot:true,botDifficulty:level});
+  room.message=`Bot ${n} added.`;
+  return null;
+}
+
 function handle(room, p, msg) {
+  if(msg.type==="addBot") return addBot(room,p,msg.difficulty);
   if(msg.type==="start") {
     if(p.id!==room.players[0].id) return "Only the host can start.";
     if(room.players.length<2) return "Need at least 2 players.";
@@ -269,15 +374,23 @@ wss.on("connection",(ws)=>{
   ws.on("message",(raw)=>{
     let msg; try{msg=JSON.parse(raw)}catch{return send(ws,{type:"error",message:"Invalid message."});}
     if(msg.type==="create") {
-      room=freshRoom(); player={id:crypto.randomUUID(),name:String(msg.name||"Player").slice(0,20),ws,hand:[],tableau:[],connected:true,selected:[]};
+      room=freshRoom(); player={id:crypto.randomUUID(),name:String(msg.name||"Player").slice(0,20),ws,hand:[],tableau:[],connected:true,selected:[],isBot:false};
       room.players.push(player); rooms.set(room.code,room); send(ws,{type:"joined",code:room.code,playerId:player.id}); broadcast(room); return;
     }
     if(msg.type==="join") {
-      const code=String(msg.code||"").toUpperCase(); room=rooms.get(code);
+      const code=String(msg.code||"").toUpperCase(); const name=String(msg.name||"Player").trim().slice(0,20); room=rooms.get(code);
       if(!room) return send(ws,{type:"error",message:"Room not found."});
-      if(room.status!=="lobby") return send(ws,{type:"error",message:"Game already started."});
+      const existing=room.players.find(x=>!x.isBot && x.name.toLowerCase()===name.toLowerCase() && !x.connected);
+      if(existing) {
+        existing.ws=ws; existing.connected=true; player=existing;
+        send(ws,{type:"joined",code:room.code,playerId:player.id,rejoined:true}); broadcast(room);
+        if(room.currentPlayer===player.id) setTimeout(()=>{ if(room.currentPlayer===player.id && room.status!=="gameover") broadcast(room); },50);
+        return;
+      }
+      if(room.status!=="lobby") return send(ws,{type:"error",message:"Game already started. Rejoin using the same name."});
       if(room.players.length>=6) return send(ws,{type:"error",message:"Room is full."});
-      player={id:crypto.randomUUID(),name:String(msg.name||"Player").slice(0,20),ws,hand:[],tableau:[],connected:true,selected:[]};
+      if(room.players.some(x=>!x.isBot && x.connected && x.name.toLowerCase()===name.toLowerCase())) return send(ws,{type:"error",message:"That name is already in the room."});
+      player={id:crypto.randomUUID(),name:name||"Player",ws,hand:[],tableau:[],connected:true,selected:[],isBot:false};
       room.players.push(player); send(ws,{type:"joined",code:room.code,playerId:player.id}); broadcast(room); return;
     }
     if(!room||!player) return send(ws,{type:"error",message:"Join a room first."});
@@ -285,7 +398,7 @@ wss.on("connection",(ws)=>{
     broadcast(room);
   });
   ws.on("close",()=>{
-    if(player&&room){player.connected=false; player.ws=null; broadcast(room);}
+    if(player&&room&&!player.isBot){player.connected=false; player.ws=null; broadcast(room);}
   });
 });
 

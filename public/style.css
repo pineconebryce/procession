@@ -112,3 +112,7 @@ button{border:1px solid #4b4941;background:#252520;color:var(--text);padding:11p
 @media(max-width:760px){
   .procession-slot{width:70px;height:100px;flex-basis:70px}
 }
+
+/* v15 room controls, home navigation, and bot styling */
+.home-brand{appearance:none;border:0;background:transparent;padding:4px 0;color:var(--text);display:flex;gap:12px;align-items:center;text-align:left;border-radius:8px}.home-brand:hover{background:transparent;color:var(--text)}.home-brand:focus-visible{outline:2px solid var(--gold);outline-offset:4px}.home-brand .brand-mark{font-size:25px;color:var(--gold)}.home-brand b{display:block;letter-spacing:.18em;font-size:14px}.bot-controls{display:flex;gap:6px;align-items:center}.bot-controls select{background:#10100e;border:1px solid #4b4941;color:var(--text);padding:10px 10px;border-radius:10px;font:inherit;font-size:12px}.bot-tile{border-color:#4b4b3e}.bot-dot{background:#b6a15a}.player-role{padding:5px 0 0;font-size:10px;letter-spacing:.06em}.room-actions{flex-wrap:wrap}
+@media(max-width:800px){.bot-controls{width:100%;justify-content:flex-end}.bot-controls select{flex:1}}

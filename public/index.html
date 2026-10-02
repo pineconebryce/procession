@@ -9,7 +9,7 @@
 <body>
 <div id="app">
   <header class="topbar">
-    <div class="brand"><span class="brand-mark">✦</span><div><b>PROCESSION</b><small>Six suits. One procession. Lowest score wins.</small></div></div>
+    <button id="homeBtn" class="brand home-brand" aria-label="Return to home"><span class="brand-mark">✦</span><div><b>PROCESSION</b></div></button>
     <div id="roomBadge" class="room-badge hidden"></div>
   </header>
 
@@ -39,7 +39,7 @@
     <section id="room" class="screen hidden">
       <div class="room-head">
         <div><div class="eyebrow">ROOM</div><h2 id="roomCodeTitle">----</h2></div>
-        <div class="room-actions"><button id="inviteBtn">Copy invite link</button><button id="startBtn" class="primary">Start game</button></div>
+        <div class="room-actions"><button id="inviteBtn">Copy invite link</button><div id="botControls" class="bot-controls"><select id="botDifficulty" aria-label="Bot difficulty"><option value="easy">Easy bot</option><option value="normal" selected>Normal bot</option><option value="hard">Hard bot</option></select><button id="addBotBtn">Add bot</button></div><button id="startBtn" class="primary">Start game</button></div>
       </div>
       <div class="panel">
         <div id="playersList" class="players-list"></div>
