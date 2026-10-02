@@ -39,6 +39,24 @@ function show(id){["lobby","room","game"].forEach(x=>$(x).classList.toggle("hidd
 $("createBtn").onclick=()=>{const n=$("name").value.trim()||"Player";send({type:"create",name:n})};
 $("joinBtn").onclick=()=>{const n=$("name").value.trim()||"Player",c=$("code").value.trim().toUpperCase();send({type:"join",name:n,code:c})};
 $("startBtn").onclick=()=>send({type:"start"});
+async function copyInvite(){
+  if(!state?.code)return;
+  const url=new URL(location.href);
+  url.searchParams.set("room",state.code);
+  url.hash="";
+  try{
+    await navigator.clipboard.writeText(url.toString());
+    const b=$("inviteBtn"),g=$("gameInviteBtn");
+    [b,g].forEach(x=>{if(x){const old=x.textContent;x.textContent="Invite link copied!";setTimeout(()=>x.textContent=old,1600);}});
+  }catch(e){
+    const fallback=prompt("Copy this invite link:",url.toString());
+    if(fallback!==null){} 
+  }
+}
+$("inviteBtn").onclick=copyInvite;
+$("gameInviteBtn").onclick=copyInvite;
+const roomFromUrl=new URLSearchParams(location.search).get("room");
+if(roomFromUrl){$("code").value=roomFromUrl.toUpperCase().slice(0,4);}
 $("code").oninput=e=>e.target.value=e.target.value.replace(/[^a-z0-9]/gi,"").toUpperCase();
 
 function suit(id){return state.suits.find(s=>s.id===id)}
@@ -212,13 +230,18 @@ function showEndgameAnnouncement(){
 }
 function showGameOver(){
   $("modal").classList.add("hidden");
+  const minScore=Math.min(...state.players.map(p=>p.score));
   const rows=state.players.map(p=>{
+    const winner=p.score===minScore;
     const onePoint=state.suits.filter(s=>(state.controllers?.[s.id]||[]).includes(p.id));
-    const suitsText=onePoint.length?onePoint.map(s=>`<span class="score-suit" style="border-color:${s.color};color:${s.color}">${s.symbol} ${s.name}</span>`).join(""):"<span class=\"score-suit none\">None</span>";
-    return `<div class="gameover-player"><div class="score-row"><span>${esc(p.name)}${p.id===me?" · YOU":""}</span><span class="score">${p.score}</span></div><div class="one-point-line"><b>1-point suits:</b> ${suitsText}</div></div>`;
+    const suitsText=onePoint.length?onePoint.map(s=>`<span class="score-suit" style="border-color:${s.color};color:${s.color}">${s.symbol} ${s.name}</span>`).join(""):'<span class="score-suit none">None</span>';
+    const result=winner
+      ? `<div class="result-banner winner-banner">WINNER!</div>`
+      : `<div class="result-banner rough-banner">THAT'S ROUGH, BUDDY</div>`;
+    return `<div class="gameover-player ${winner?"is-winner":""}">${result}<div class="score-row"><span>${esc(p.name)}${p.id===me?" · YOU":""}</span><span class="score">${p.score}</span></div><div class="one-point-line"><b>1-point suits:</b> ${suitsText}</div></div>`;
   }).join("");
   const panel=$("gameOverPanel");
-  panel.innerHTML=`<h3>Game over</h3><p>Final scores. Suits shown below are controlled by that player and score 1 point per card.</p><div class="gameover-scores">${rows}</div><div class="modal-actions"><button onclick="location.reload()">New game</button></div>`;
+  panel.innerHTML=`<h3>Game over</h3><p>Final scores. Controlled suits score 1 point per card.</p><div class="gameover-scores">${rows}</div><div class="modal-actions"><button onclick="location.reload()">New game</button></div>`;
   panel.classList.remove("hidden");
 }
 function esc(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}

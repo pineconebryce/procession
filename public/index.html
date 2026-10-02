@@ -16,17 +16,6 @@
   <main>
     <section id="lobby" class="screen">
       <div class="hero hero-home">
-        <div class="home-rules">
-          <div class="eyebrow">HOW TO PLAY</div>
-          <ul>
-            <li><b>Play a card</b><span>Add it to the end of the Procession.</span></li>
-            <li><b>Protect the last X</b><span>The card's number protects the last X cards already in line.</span></li>
-            <li><b>Collect the rest</b><span>Unprotected cards matching your suit or numbered ≤ X go to your Tableau.</span></li>
-            <li><b>Keep your score low</b><span>Cards normally score their printed number.</span></li>
-            <li><b>Control suits</b><span>If you have the most cards in a suit, those cards score 1 point each.</span></li>
-            <li><b>Finish the game</b><span>Collect all six suits or exhaust the draw pile to trigger final turns.</span></li>
-          </ul>
-        </div>
         <div class="hero-title-area">
           <div class="eyebrow">MULTIPLAYER CARD GAME</div>
           <div class="title-cards" aria-label="Procession">
@@ -53,7 +42,7 @@
     <section id="room" class="screen hidden">
       <div class="room-head">
         <div><div class="eyebrow">ROOM</div><h2 id="roomCodeTitle">----</h2></div>
-        <button id="startBtn" class="primary">Start game</button>
+        <div class="room-actions"><button id="inviteBtn">Copy invite link</button><button id="startBtn" class="primary">Start game</button></div>
       </div>
       <div class="panel">
         <div id="playersList" class="players-list"></div>
@@ -67,15 +56,16 @@
         <aside class="side-panel">
           <div class="section-title">PLAYERS</div>
           <div id="scoreboard"></div>
-          <div class="section-title">PROCESSION</div>
+          <div class="section-title">HOW TO PLAY</div>
           <div class="mini-rules">
-            <div><b>Play X</b><span>Protect the last X existing cards.</span></div>
-            <div><b>Collect</b><span>Unprotected cards matching your suit OR ≤ X.</span></div>
-            <div><b>Goal</b><span>Keep your score low.</span></div>
+            <div><b>1. Play a card</b><span>Add it to the end of the Procession.</span></div>
+            <div><b>2. Protect</b><span>The card's number protects that many cards at the end, shown in gold.</span></div>
+            <div><b>3. Pick up</b><span>Pick up unprotected cards of your color, or the same number or lower.</span></div>
+            <div><b>4. Score low</b><span>Most cards score their printed number. Controlling a suit makes those cards worth 1 point.</span></div>
           </div>
         </aside>
         <div class="table">
-          <div class="table-title"><span>THE PROCESSION</span><span id="processionCount"></span><span id="deckCount"></span></div>
+          <div class="table-title"><span>THE PROCESSION</span><span id="processionCount"></span><span id="deckCount"></span><button id="gameInviteBtn" class="small-btn">Invite friends</button></div>
           <div id="procession" class="procession"></div><div class="procession-direction" aria-label="Cards move toward the left">←</div>
           <div class="table-title"><span>ALL TABLEAUS</span><span>CARDS ARE GROUPED BY SUIT</span></div>
           <div id="tableaus" class="tableaus"></div>
