@@ -239,18 +239,20 @@ function showEndgameAnnouncement(){
 }
 function showGameOver(){
   const minScore=Math.min(...state.players.map(p=>p.score));
-  const ordered=[...state.players].sort((a,b)=>a.id===me?-1:b.id===me?1:0);
-  const rows=ordered.map(p=>{
+  const ordered=[...state.players].sort((a,b)=>a.score-b.score || (a.id===me?-1:b.id===me?1:0));
+  const rows=ordered.map((p,index)=>{
     const winner=p.score===minScore;
+    const isMe=p.id===me;
     const points=suitPointsForPlayer(p);
-    const result=winner
-      ? `<div class="result-banner winner-banner">WINNER!</div>`
-      : `<div class="result-banner rough-banner">THAT'S ROUGH, BUDDY</div>`;
+    const placement=`${index+1}${index%10===0&&index!==10?"th":index%10===1&&index!==11?"st":index%10===2&&index!==12?"nd":"th"}`;
+    const result=isMe
+      ? `<div class="result-banner ${winner?"winner-banner":"rough-banner"}">${winner?"WINNER!":"THAT'S ROUGH, BUDDY"}</div>`
+      : `<div class="placement-label">${placement}</div>`;
     const suitRows=state.suits.map(s=>{
       const d=points[s.id];
       return `<div class="final-suit-row ${d.controlled?"controlled":""}"><span class="final-suit-name" style="color:${s.color}">${s.symbol} ${s.name}</span><span>${d.controlled?"WON · ":""}${d.points} pts</span></div>`;
     }).join("");
-    return `<div class="gameover-player ${winner?"is-winner":""} ${p.id===me?"my-result":""}">${result}<div class="final-player-head"><b>${esc(p.name)}${p.id===me?" · YOU":""}</b><strong>${p.score} TOTAL</strong></div><div class="final-suits"><div class="final-suits-title">SUIT POINTS</div>${suitRows}</div></div>`;
+    return `<div class="gameover-player ${winner?"is-winner":""} ${isMe?"my-result":""}">${result}<div class="final-player-head"><b>${esc(p.name)}${isMe?" · YOU":""}</b><strong>${p.score} TOTAL</strong></div><div class="final-suits"><div class="final-suits-title">SUIT POINTS</div>${suitRows}</div></div>`;
   }).join("");
   const panel=$("gameOverPanel");
   panel.innerHTML=`<h3>Final Score</h3><p>Winning a suit makes every card of that suit worth 1 point.</p><div class="gameover-scores">${rows}</div><div class="modal-actions"><button onclick="location.reload()">New game</button></div>`;
