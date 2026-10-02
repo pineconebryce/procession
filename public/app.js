@@ -58,6 +58,7 @@ function renderGame(){
   }
   if(state.status==="selection") renderSelection(mep);
   if(state.status==="gameover") showGameOver();
+  else $("gameOverPanel").classList.add("hidden");
 }
 function renderProcession(){
   const el=$("procession"); el.innerHTML="";
@@ -67,35 +68,40 @@ function renderProcession(){
 }
 function collectionPreview(played){
   const existingCount=state.procession.length;
-  const safe=new Set(), collect=new Set();
-  if(played.number>=existingCount){
-    state.procession.forEach(c=>safe.add(c.id));
-    return {safe,collect};
-  }
-  const protectedStart=Math.max(0,existingCount-played.number);
+  const safe=new Set(), collect=new Set(), protectedByNumber=new Set();
+  const protectedCount=Math.min(Math.max(played.number,0),existingCount);
+  const protectedStart=existingCount-protectedCount;
   state.procession.forEach((c,i)=>{
-    if(i>=protectedStart) safe.add(c.id);
-    else if(c.suitId===played.suitId || c.number<=played.number) collect.add(c.id);
+    if(i>=protectedStart && protectedCount>0){
+      safe.add(c.id);
+      protectedByNumber.add(c.id);
+    } else if(c.suitId===played.suitId || c.number<=played.number) collect.add(c.id);
     else safe.add(c.id);
   });
-  return {safe,collect};
+  return {safe,collect,protectedByNumber,protectedCount};
 }
 function attachHandHover(card,node){
   node.addEventListener("mouseenter",()=>{
     if(state.status!=="playing" || state.currentPlayer!==me)return;
     const preview=collectionPreview(card);
     document.querySelectorAll("#procession .card").forEach(x=>{
-      x.classList.remove("preview-safe","preview-collect");
+      x.classList.remove("preview-safe","preview-collect","preview-protected");
       if(preview.collect.has(x.dataset.cardId))x.classList.add("preview-collect");
       else if(preview.safe.has(x.dataset.cardId))x.classList.add("preview-safe");
+      if(preview.protectedByNumber.has(x.dataset.cardId))x.classList.add("preview-protected");
     });
+    const key=$("previewKey");
+    key.textContent=preview.protectedCount?`Underlined numbers = ${preview.protectedCount} card${preview.protectedCount===1?"":"s"} excluded by ${card.number}.`:`No cards are excluded by ${card.number}; collection can consider the entire Procession.`;
+    key.classList.remove("hidden");
     node.classList.add("preview-source");
   });
   node.addEventListener("mouseleave",clearPreview);
 }
 function clearPreview(){
-  document.querySelectorAll("#procession .card").forEach(x=>x.classList.remove("preview-safe","preview-collect"));
+  document.querySelectorAll("#procession .card").forEach(x=>x.classList.remove("preview-safe","preview-collect","preview-protected"));
   document.querySelectorAll("#hand .card").forEach(x=>x.classList.remove("preview-source"));
+  $("previewKey").classList.add("hidden");
+  $("previewKey").textContent="";
 }
 function renderAllTableaus(){
   const wrap=$("tableaus"); wrap.innerHTML="";
@@ -145,10 +151,11 @@ function showEndgameAnnouncement(){
   $("continueEndgame").onclick=()=>$("modal").classList.add("hidden");
 }
 function showGameOver(){
-  const sc=Object.fromEntries(state.players.map(p=>[p.id,p.score]));
-  const rows=state.players.map(p=>`<div class="score-row"><span>${esc(p.name)}</span><span class="score">${p.score}</span></div>`).join("");
-  $("modalTitle").innerHTML="Game over"; $("modalBody").innerHTML=`<p>Final scores:</p>${rows}`;
-  $("modalActions").innerHTML=`<button onclick="location.reload()">New game</button>`; $("modal").classList.remove("hidden");
+  $("modal").classList.add("hidden");
+  const rows=state.players.map(p=>`<div class="score-row"><span>${esc(p.name)}${p.id===me?" · YOU":""}</span><span class="score">${p.score}</span></div>`).join("");
+  const panel=$("gameOverPanel");
+  panel.innerHTML=`<h3>Game over</h3><p>Final scores — lowest total wins.</p><div class="gameover-scores">${rows}</div><div class="modal-actions"><button onclick="location.reload()">New game</button></div>`;
+  panel.classList.remove("hidden");
 }
 function esc(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function renderSuits(){ $("suits").innerHTML=[["red","Red","◆"],["blue","Blue","●"],["green","Green","▲"],["yellow","Yellow","★"],["purple","Purple","⬟"],["orange","Orange","✚"]].map(x=>`<div class="suit-chip"><span class="sym">${x[2]}</span><span>${x[1]}</span></div>`).join("")}
