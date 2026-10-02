@@ -85,21 +85,45 @@ function attachHandHover(card,node){
     if(state.status!=="playing" || state.currentPlayer!==me)return;
     const preview=collectionPreview(card);
     document.querySelectorAll("#procession .card").forEach(x=>{
-      x.classList.remove("preview-safe","preview-collect","preview-protected");
+      x.classList.remove("preview-safe","preview-collect");
       if(preview.collect.has(x.dataset.cardId))x.classList.add("preview-collect");
       else if(preview.safe.has(x.dataset.cardId))x.classList.add("preview-safe");
-      if(preview.protectedByNumber.has(x.dataset.cardId))x.classList.add("preview-protected");
     });
     const key=$("previewKey");
-    key.textContent=preview.protectedCount?`Underlined numbers = ${preview.protectedCount} card${preview.protectedCount===1?"":"s"} excluded by ${card.number}.`:`No cards are excluded by ${card.number}; collection can consider the entire Procession.`;
+    key.textContent=preview.protectedCount
+      ? `Yellow bracket = ${preview.protectedCount} card${preview.protectedCount===1?"":"s"} excluded by the number ${card.number}.`
+      : `No cards are excluded by ${card.number}; collection can consider the entire Procession.`;
     key.classList.remove("hidden");
     node.classList.add("preview-source");
+    drawProtectionBracket(preview.protectedCount, card.number);
   });
   node.addEventListener("mouseleave",clearPreview);
 }
+function drawProtectionBracket(count, number){
+  removeProtectionBracket();
+  if(!count)return;
+  const container=$("procession");
+  const cards=[...container.querySelectorAll(".card")];
+  if(!cards.length)return;
+  const firstIndex=Math.max(0,cards.length-count);
+  const first=cards[firstIndex], last=cards[cards.length-1];
+  const cr=container.getBoundingClientRect();
+  const fr=first.getBoundingClientRect(), lr=last.getBoundingClientRect();
+  const bracket=document.createElement("div");
+  bracket.className="protection-bracket";
+  bracket.style.left=`${fr.left-cr.left-3}px`;
+  bracket.style.width=`${lr.right-fr.left+6}px`;
+  bracket.style.top=`${Math.max(1,fr.top-cr.top-10)}px`;
+  bracket.innerHTML=`<span>${number}</span>`;
+  container.appendChild(bracket);
+}
+function removeProtectionBracket(){
+  $("procession")?.querySelector(".protection-bracket")?.remove();
+}
 function clearPreview(){
-  document.querySelectorAll("#procession .card").forEach(x=>x.classList.remove("preview-safe","preview-collect","preview-protected"));
+  document.querySelectorAll("#procession .card").forEach(x=>x.classList.remove("preview-safe","preview-collect"));
   document.querySelectorAll("#hand .card").forEach(x=>x.classList.remove("preview-source"));
+  removeProtectionBracket();
   $("previewKey").classList.add("hidden");
   $("previewKey").textContent="";
 }
