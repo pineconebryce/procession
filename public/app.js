@@ -68,25 +68,22 @@ function renderProcession(){
 }
 function collectionPreview(played){
   const existingCount=state.procession.length;
-  const protectedCount=Math.min(Math.max(played.number,0),existingCount);
+  const protectedCount=Math.min(Math.max(Number(played.number)||0,0),existingCount);
   return {protectedCount};
 }
 function attachHandHover(card,node){
   node.addEventListener("mouseenter",()=>{
-    if(state.status!=="playing" || state.currentPlayer!==me)return;
+    if(!state || state.status!=="playing" || state.currentPlayer!==me)return;
+    clearPreview();
     const preview=collectionPreview(card);
-    document.querySelectorAll("#procession .card").forEach(x=>{
-      x.classList.remove("preview-safe","preview-collect","preview-protected");
-    });
     if(preview.protectedCount){
-      const cards=[...document.querySelectorAll("#procession .card")];
-      cards.slice(Math.max(0,cards.length-preview.protectedCount))
-        .forEach(x=>x.classList.add("preview-protected"));
+      const cards=Array.from(document.querySelectorAll("#procession .card"));
+      cards.slice(Math.max(0,cards.length-preview.protectedCount)).forEach(x=>x.classList.add("preview-protected"));
     }
     const key=$("previewKey");
     key.textContent=preview.protectedCount
-      ? `Yellow bracket = ${preview.protectedCount} card${preview.protectedCount===1?"":"s"} excluded by the number ${card.number}.`
-      : `No cards are excluded by ${card.number}; collection can consider the entire Procession.`;
+      ? `Gold highlight = ${preview.protectedCount} protected card${preview.protectedCount===1?"":"s"} excluded by the number ${card.number}.`
+      : `No cards are protected by ${card.number}; collection can consider the entire Procession.`;
     key.classList.remove("hidden");
     node.classList.add("preview-source");
     drawProtectionBracket(preview.protectedCount, card.number);
