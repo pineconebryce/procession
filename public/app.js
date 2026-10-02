@@ -67,17 +67,28 @@ function renderProcession(){
   });
 }
 function collectionPreview(played){
-  const existingCount=state.procession.length;
-  const protectedCount=Math.min(Math.max(Number(played.number)||0,0),existingCount);
-  return {protectedCount};
+  const procession=state.procession;
+  const existingCount=procession.length;
+  const x=Math.max(Number(played.number)||0,0);
+  const protectedCount=Math.min(x,existingCount);
+  const firstCollectibleIndex=protectedCount;
+  const pickupIds=new Set();
+  procession.forEach((card,index)=>{
+    if(index < firstCollectibleIndex) return;
+    if(card.suitId===played.suitId || Number(card.number)<=x) pickupIds.add(card.id);
+  });
+  return {protectedCount,pickupIds};
 }
 function attachHandHover(card,node){
   node.addEventListener("mouseenter",()=>{
     if(!state || state.status!=="playing" || state.currentPlayer!==me)return;
     clearPreview();
     const preview=collectionPreview(card);
+    const cards=Array.from(document.querySelectorAll("#procession .card"));
+    cards.forEach(x=>{
+      if(preview.pickupIds.has(x.dataset.cardId)) x.classList.add("preview-pickup");
+    });
     if(preview.protectedCount){
-      const cards=Array.from(document.querySelectorAll("#procession .card"));
       cards.slice(Math.max(0,cards.length-preview.protectedCount)).forEach(x=>x.classList.add("preview-protected"));
     }
     const key=$("previewKey");
@@ -112,7 +123,7 @@ function removeProtectionBracket(){
   $("procession")?.querySelector(".protection-bracket")?.remove();
 }
 function clearPreview(){
-  document.querySelectorAll("#procession .card").forEach(x=>x.classList.remove("preview-safe","preview-collect","preview-protected"));
+  document.querySelectorAll("#procession .card").forEach(x=>x.classList.remove("preview-safe","preview-collect","preview-protected","preview-pickup"));
   document.querySelectorAll("#hand .card").forEach(x=>x.classList.remove("preview-source"));
   removeProtectionBracket();
   $("previewKey").classList.add("hidden");
