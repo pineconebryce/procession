@@ -30,7 +30,7 @@ button{border:1px solid #4b4941;background:#252520;color:var(--text);padding:11p
 .stack-label{font-size:7px;font-weight:700;letter-spacing:.03em;display:flex;align-items:center;gap:2px;margin-bottom:3px;white-space:nowrap}.stack-label span{font-size:11px}.stack-label small{margin-left:auto;color:#8d897e;font-size:8px}
 .stack-cards{position:relative;min-height:48px;padding:1px 0 0;display:flex;overflow:hidden}.stacked-card{width:36px;height:50px;flex:0 0 36px;padding:3px;border-radius:5px;margin-right:-11px;box-shadow:0 3px 7px #0006}.stacked-card .number{font-size:19px}.stacked-card .corner{font-size:7px}.stacked-card .tl{top:3px;left:3px}.stacked-card .br{bottom:3px;right:3px}.stacked-card .symbol{font-size:12px;bottom:9px}
 .card .number{position:relative;z-index:2;line-height:1}.card .symbol{position:absolute;bottom:20px;top:auto;font-size:20px;line-height:1;z-index:1}.card .corner{z-index:3}.card{overflow:hidden}.card.selectable:hover{transform:translateY(-8px)}
-.preview-source{outline:3px solid var(--gold);box-shadow:0 0 0 5px #d9b86c33,0 12px 24px #0008}.preview-safe{opacity:.72;filter:saturate(.65);box-shadow:0 0 0 3px #6ebf8a,0 7px 18px #0005}.preview-collect{opacity:1;box-shadow:0 0 0 3px #df7777,0 7px 18px #0007}.preview-pickup{transform:translateY(-7px);box-shadow:0 10px 20px #0009}
+.preview-source{outline:3px solid var(--gold);box-shadow:0 0 0 5px #d9b86c33,0 12px 24px #0008}.preview-pickup{transform:translateY(-7px);box-shadow:0 10px 20px #0009}
 .protection-bracket{position:absolute;height:10px;border-top:3px solid #f0c84b;border-left:3px solid #f0c84b;border-right:3px solid #f0c84b;border-radius:5px 5px 0 0;pointer-events:none;z-index:20;box-shadow:0 0 8px #f0c84b55}.protection-bracket::after{content:"";position:absolute;left:50%;bottom:-7px;width:3px;height:7px;background:#f0c84b;transform:translateX(-50%);border-radius:2px}.protection-bracket span{position:absolute;left:50%;top:-22px;transform:translateX(-50%);font-size:11px;font-weight:800;line-height:16px;padding:0 5px;border-radius:5px;background:#f0c84b;color:#1b1912;white-space:nowrap}
 
 .preview-key{font-size:9px;color:#aaa69a;margin:-3px 4px 5px;min-height:12px;letter-spacing:.02em}.preview-key b{color:var(--gold)}
@@ -42,4 +42,4 @@ button{border:1px solid #4b4941;background:#252520;color:var(--text);padding:11p
 @media(max-width:620px){.tableau-stacks{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
 
-.card.preview-protected{outline:3px solid #f0c84b;box-shadow:0 0 0 5px #f0c84b66,0 7px 18px #0005;filter:brightness(1.18);}
+.card.preview-protected{transform:none !important;box-shadow:0 0 0 5px #f0c84b66,0 7px 18px #0005;filter:brightness(1.18);}

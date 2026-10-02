@@ -74,8 +74,8 @@ function collectionPreview(played){
   const firstCollectibleIndex=protectedCount;
   const pickupIds=new Set();
   procession.forEach((card,index)=>{
-    if(index < firstCollectibleIndex) return;
-    if(card.suitId===played.suitId || Number(card.number)<=x) pickupIds.add(card.id);
+    // Protected cards are never eligible for pickup, regardless of suit/number.
+    if(index >= firstCollectibleIndex && (card.suitId===played.suitId || Number(card.number)<=x)) pickupIds.add(card.id);
   });
   return {protectedCount,pickupIds};
 }
