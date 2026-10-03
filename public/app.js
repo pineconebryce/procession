@@ -95,71 +95,11 @@ $("code").oninput=e=>e.target.value=e.target.value.replace(/[^a-z0-9]/gi,"").toU
 
 function suit(id){return state.suits.find(s=>s.id===id)}
 function suitArt(suitId){
-  const common='viewBox="0 0 120 100" aria-hidden="true" focusable="false"';
-  const arts={
-    red:`<svg ${common}>
-      <g stroke="#7f2b28" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="48" cy="23" r="10" fill="#f3b08c"/>
-        <path d="M40 22c2-10 16-14 22-5-5-1-9 1-13 5z" fill="#c9433d"/>
-        <path d="M43 34l-5 27 12 3 8-22 10 14 9-4-16-24z" fill="#d94b43"/>
-        <path d="M49 63l-7 22M59 64l8 21" fill="none" stroke="#4d3b35" stroke-width="5"/>
-        <path d="M40 40l-14 13M67 38l12 8" fill="none" stroke="#d94b43" stroke-width="7"/>
-        <path d="M25 18c-8-9-18-5-20 3 8-1 13 2 18 8" fill="#ef4444"/>
-        <circle cx="11" cy="12" r="6" fill="#ef4444"/><circle cx="20" cy="7" r="5" fill="#f5b52e"/><circle cx="27" cy="13" r="5" fill="#3b82f6"/>
-      </g>
-    </svg>`,
-    yellow:`<svg ${common}>
-      <g stroke="#8a5b13" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M58 20c-10-8-22-3-25 8-3 10 3 20 12 23l-2 30h-10v9h20l5-27 9 27h19v-9H74l-6-31c8-2 14-9 14-18 0-9-7-14-15-12l-9 1z" fill="#f0c84b"/>
-        <path d="M39 25c7-5 14-4 19 0M43 36c7-4 13-3 19 1M48 48c5-3 11-2 16 2" fill="none" stroke="#9a6816"/>
-        <circle cx="70" cy="22" r="2" fill="#111" stroke="none"/>
-        <path d="M78 19c8-4 12-1 15 3-5 4-10 4-14 2M57 14c-1-8 4-12 9-12 2 5 0 9-4 13" fill="#f0c84b"/>
-      </g>
-    </svg>`,
-    blue:`<svg ${common}>
-      <g stroke="#164a83" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M39 20c-9 0-17 8-17 19v30c0 13 9 20 23 20h18c9 0 17-6 17-16V43c0-11-8-18-18-18H57c-4-4-10-5-18-5z" fill="#4c93df"/>
-        <path d="M27 46c-13-7-24-1-24 10 0 9 9 14 19 10l10-5-5-9-10 5c-3 1-6 0-6-2 0-3 4-4 8-1z" fill="#4c93df"/>
-        <path d="M73 39c12-3 19 3 19 11 0 8-6 13-14 13h-9v-8h8c3 0 5-2 5-5 0-3-3-5-6-4z" fill="#4c93df"/>
-        <circle cx="43" cy="30" r="3" fill="#fff" stroke="none"/><circle cx="44" cy="30" r="1.2" fill="#164a83" stroke="none"/>
-        <path d="M48 58h22v15H48z" fill="#ef4444"/><text x="59" y="69" text-anchor="middle" font-size="11" font-weight="900" fill="#fff" stroke="none">3</text>
-      </g>
-    </svg>`,
-    green:`<svg ${common}>
-      <g stroke="#236b2a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 68c9-7 13-17 13-30 0-12 9-20 23-20 18 0 31 10 31 24 0 10-7 18-18 22l12 18H59l-9-13-8 13H22z" fill="#54a94d"/>
-        <path d="M24 45c-9-8-20-5-22 3 5 1 10 4 15 10l14-1-2-10z" fill="#54a94d"/>
-        <circle cx="69" cy="30" r="3" fill="#fff" stroke="none"/><circle cx="70" cy="30" r="1.2" fill="#236b2a" stroke="none"/>
-        <path d="M61 18c8-6 17-3 20 3-6 2-12 1-17-1z" fill="#2f7d34"/>
-        <path d="M51 72h24" fill="none" stroke="#2b5c2b" stroke-width="5"/>
-      </g>
-    </svg>`,
-    purple:`<svg ${common}>
-      <g stroke="#5a3979" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="48" cy="22" r="10" fill="#f0bd92"/>
-        <path d="M37 21c2-11 17-14 24-4-7-2-14 0-19 5z" fill="#7f55a8"/>
-        <path d="M40 35l-8 46h39l-10-46z" fill="#8e5bb4"/>
-        <path d="M38 39c9 7 19 7 30 0" fill="none" stroke="#d7c0e8" stroke-width="6"/>
-        <path d="M31 48l-14 16M63 47l16 15" fill="none" stroke="#8e5bb4" stroke-width="7"/>
-        <path d="M39 9l9-7 9 7-9 7z" fill="#f0c84b"/>
-        <circle cx="52" cy="22" r="2" fill="#111" stroke="none"/>
-      </g>
-    </svg>`,
-    orange:`<svg ${common}>
-      <g stroke="#123b42" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M20 62h78l-7-17H43L31 34H17z" fill="#0f6670"/>
-        <path d="M34 45l11-16h27l13 16z" fill="#0f6670"/>
-        <circle cx="35" cy="64" r="10" fill="#e8e3d7"/><circle cx="35" cy="64" r="5" fill="#27474d"/>
-        <circle cx="83" cy="64" r="10" fill="#e8e3d7"/><circle cx="83" cy="64" r="5" fill="#27474d"/>
-        <path d="M53 35c-8-6-15-2-17 5 6 1 11 4 15 8h15V38z" fill="#d07a2f"/>
-        <circle cx="44" cy="35" r="2" fill="#111" stroke="none"/>
-        <path d="M60 32h13v10H60z" fill="#f4eee3"/><text x="66.5" y="40" text-anchor="middle" font-size="9" font-weight="900" fill="#0f6670" stroke="none">1</text>
-        <path d="M18 61h-8" fill="none" stroke="#f97316" stroke-width="4"/>
-      </g>
-    </svg>`
-  };
-  return arts[suitId]||'';
+  const names={red:"red",yellow:"yellow",blue:"blue",green:"green",purple:"purple",orange:"orange"};
+  const file=names[suitId];
+  return file?`<img src="/assets/suits/${file}.png" alt="" aria-hidden="true" draggable="false">`:"";
 }
+
 function cardEl(c,opts={}){
   const s=suit(c.suitId), d=document.createElement("div"); d.className="card "+(opts.selectable?"selectable ":"")+(opts.selected?"selected ":"")+(opts.extraClass||"");
   d.dataset.cardId=c.id; d.dataset.suit=c.suitId; d.dataset.symbol=s.symbol;
