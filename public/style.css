@@ -132,3 +132,59 @@ button{border:1px solid #4b4941;background:#252520;color:var(--text);padding:11p
   background-size:180px 180px;
 }
 #lobby>*{position:relative;z-index:1}
+
+/* v18 illustrated procession cards */
+.card{background:linear-gradient(145deg,#fffdf8,#ece5d8);border-top:6px solid var(--suit-color)!important;border-bottom:3px solid var(--suit-color);box-shadow:0 8px 20px #0006, inset 0 0 0 2px color-mix(in srgb,var(--suit-color) 12%,transparent);overflow:hidden}
+.card::after{content:"";position:absolute;inset:5px;border:1px solid color-mix(in srgb,var(--suit-color) 35%,#b8b1a4);border-radius:6px;pointer-events:none;opacity:.75}
+.card .figure{position:absolute;left:8px;right:8px;top:30px;bottom:17px;display:grid;place-items:center;z-index:1;opacity:.92}
+.card .figure svg{width:100%;height:100%;max-height:70px;display:block}
+.card .number{display:none}
+.card .corner{font-size:18px;font-weight:900;line-height:1;z-index:4;text-shadow:0 1px 0 #fff}
+.card .tl{top:7px;left:8px}.card .br{bottom:6px;right:8px}
+.card[data-suit="red"]{background:linear-gradient(145deg,#fff6f5,#f6dede)}
+.card[data-suit="blue"]{background:linear-gradient(145deg,#f3f8ff,#dceafa)}
+.card[data-suit="green"]{background:linear-gradient(145deg,#f5fbf2,#deefd9)}
+.card[data-suit="yellow"]{background:linear-gradient(145deg,#fffdf0,#f6edc6)}
+.card[data-suit="purple"]{background:linear-gradient(145deg,#fbf7ff,#e9dcf3)}
+.card[data-suit="orange"]{background:linear-gradient(145deg,#fff8ef,#f5e0c8)}
+
+/* Tableau inspection: hover the entire suit stack, not a single card. */
+.suit-stack{position:relative;overflow:visible;transition:z-index .1s}
+.stack-cards{min-height:92px}
+.stacked-card{width:50px;height:70px;top:calc(var(--stack-i) * 14px);overflow:hidden}
+.stacked-card .corner{font-size:12px;top:4px}.stacked-card .tl{left:4px}.stacked-card .br{right:4px;bottom:4px}
+.stacked-card .figure{top:22px;bottom:7px;left:5px;right:5px}.stacked-card .figure svg{max-height:42px}
+.suit-stack:hover{z-index:2000}
+.suit-stack:hover .stack-cards{min-height:calc(82px + (var(--stack-count, 1) - 1) * 27px)}
+.suit-stack:hover .stacked-card{width:66px;height:92px;top:calc(var(--stack-i) * 27px);z-index:calc(var(--stack-i) + 100)!important;box-shadow:0 12px 28px #000b}
+.suit-stack:hover .stacked-card .corner{font-size:17px;top:6px}.suit-stack:hover .stacked-card .tl{left:6px}.suit-stack:hover .stacked-card .br{right:6px;bottom:6px}
+.suit-stack:hover .stacked-card .figure{top:27px;bottom:10px}
+
+/* The tableau stack is an inspection surface; individual cards do not zoom. */
+.stacked-card:hover{transform:none!important;filter:none!important}
+
+/* Detailed How To Play overlay */
+.howto-button{display:inline-flex;align-items:center;gap:7px;margin-left:8px;background:#252520;border-color:#5a5548}
+.howto-button .qmark{display:grid;place-items:center;width:18px;height:18px;border:1px solid var(--gold);border-radius:50%;color:var(--gold);font-size:11px}
+.howto-grid{display:grid;gap:18px;margin-top:16px}.howto-step{display:grid;grid-template-columns:44px 100px 1fr;gap:12px;align-items:center;padding:12px;border:1px solid #302f29;border-radius:12px;background:#151512}.howto-num{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#25231c;color:var(--gold);font-weight:900}.howto-demo{display:flex;align-items:center;justify-content:center;gap:4px;min-height:72px}.howto-demo .mini-card{width:48px;height:68px;border-radius:6px;border:2px solid var(--gold);background:#f4eee3;color:#1b1912;display:grid;place-items:center;font:900 20px "Playfair Display",serif}.howto-demo .mini-card.protected{box-shadow:0 0 0 3px #f4c542;opacity:.95}.howto-demo .arrow{color:var(--gold);font-size:24px}.howto-step h4{margin:0 0 4px;font-size:13px}.howto-step p{margin:0;color:#aaa69b;font-size:11px;line-height:1.45}.howto-example{display:flex;gap:5px;align-items:center;justify-content:center}.howto-example .mini-card{border-color:#bdb5a7}.howto-note{margin-top:14px;padding:12px;border-left:3px solid var(--gold);background:#211f18;color:#c8c2b4;font-size:11px;line-height:1.5}
+@media(max-width:760px){.howto-step{grid-template-columns:32px 1fr}.howto-demo{grid-column:2}.howto-step .howto-copy{grid-column:2}.suit-stack:hover .stacked-card{width:58px;height:81px;top:calc(var(--stack-i) * 23px)}}
+
+/* v18: card-like PROCESSION title */
+.top-left-nav{display:flex;align-items:center;gap:8px}
+.title-card{border-top:6px solid #7b7569;box-shadow:0 10px 22px #0007,inset 0 0 0 2px #ffffff66}
+.title-card:nth-child(1),.title-card:nth-child(7){border-top-color:#c43f45;background:linear-gradient(145deg,#fff6f5,#f6dede)}
+.title-card:nth-child(2),.title-card:nth-child(8){border-top-color:#416fba;background:linear-gradient(145deg,#f3f8ff,#dceafa)}
+.title-card:nth-child(3),.title-card:nth-child(9){border-top-color:#4d954c;background:linear-gradient(145deg,#f5fbf2,#deefd9)}
+.title-card:nth-child(4),.title-card:nth-child(10){border-top-color:#d2ad32;background:linear-gradient(145deg,#fffdf0,#f6edc6)}
+.title-card:nth-child(5){border-top-color:#8255a6;background:linear-gradient(145deg,#fbf7ff,#e9dcf3)}
+.title-card:nth-child(6){border-top-color:#d47a2c;background:linear-gradient(145deg,#fff8ef,#f5e0c8)}
+.title-card::after{border-color:#bdb5a7}
+.title-card{border-radius:6px}
+
+/* Old suit-shape watermark is replaced by the illustrated figure. */
+.card[data-suit]::before{content:none!important}
+
+.modal-heading-row{display:flex;justify-content:space-between;align-items:flex-start}.modal-heading-row h2{margin:4px 0 0}.modal-heading-row button{font-size:24px;line-height:1;padding:4px 9px;background:transparent;border:0;color:#aaa69b}.modal-heading-row button:hover{color:var(--text);background:#252520}
+.howto-card{max-height:88vh;overflow:auto}
+.howto-button:hover{background:#302f29}
+@media(max-width:760px){.top-left-nav{gap:3px}.howto-button{padding:9px 10px;font-size:11px}.home-brand{padding-right:2px}.home-brand b{font-size:12px}.title-cards{overflow-x:auto;justify-content:flex-start;padding:0 5px}.title-card{flex:0 0 46px}}

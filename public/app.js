@@ -60,6 +60,10 @@ $("homeBtn").onclick=()=>{
   $("code").value="";
   show("lobby");
 };
+$("howtoBtn").onclick=()=>$("howtoModal").classList.remove("hidden");
+$("closeHowto").onclick=()=>$("howtoModal").classList.add("hidden");
+$("closeHowto2").onclick=()=>$("howtoModal").classList.add("hidden");
+$("howtoModal").addEventListener("click",e=>{if(e.target.id==="howtoModal")$("howtoModal").classList.add("hidden")});
 async function copyInvite(){
   if(!state?.code)return;
   const url=new URL(location.href);
@@ -80,14 +84,24 @@ if(roomFromUrl){$("code").value=roomFromUrl.toUpperCase().slice(0,4);}
 $("code").oninput=e=>e.target.value=e.target.value.replace(/[^a-z0-9]/gi,"").toUpperCase();
 
 function suit(id){return state.suits.find(s=>s.id===id)}
+function suitArt(suitId){
+  const common='viewBox="0 0 80 80" aria-hidden="true" focusable="false"';
+  const arts={
+    red:`<svg ${common}><g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="29" cy="19" r="7" fill="currentColor" stroke="none"/><path d="M29 27l-7 18 10 4 8-14 7 10 10-2-10-14"/><path d="M25 47l-5 17M36 49l8 14"/><path d="M39 20c10-8 18-7 24-1"/><path d="M57 15c-3-8 2-13 8-10M61 20c6-8 13-5 14 2M54 12c-1-8-7-9-10-4"/></g></svg>`,
+    blue:`<svg ${common}><g fill="currentColor"><path d="M24 13c7 0 10 5 10 10v5h8c4 0 7 3 7 7v18c0 7-5 12-12 12H25c-7 0-12-5-12-12V35c0-7 5-12 11-12z"/><path d="M54 31c8-3 16 2 16 10 0 7-5 12-12 12h-8v-8h8c2 0 4-2 4-4 0-3-3-5-6-4z"/><path d="M15 54h-5c-3 0-5-2-5-5s2-5 5-5h5z"/></g><circle cx="29" cy="28" r="3" fill="#fff"/><rect x="33" y="46" width="18" height="12" rx="2" fill="#fff" opacity=".9"/><text x="42" y="55" text-anchor="middle" font-size="10" font-weight="800" fill="currentColor">3</text></svg>`,
+    green:`<svg ${common}><g fill="currentColor"><path d="M17 58c5-9 7-19 7-29 0-8 6-14 15-14 11 0 20 8 20 19 0 8-5 14-12 17l10 11H42l-8-10-6 10H12z"/><circle cx="48" cy="29" r="2.5" fill="#fff"/><path d="M55 18c8-4 13-1 15 4-5 1-9 0-12-2z"/></g></svg>`,
+    yellow:`<svg ${common}><g fill="currentColor"><path d="M31 17c8 0 13 6 13 13v9l12 9v13H40l-6-13-8 13H15l7-17V31c0-8 3-14 9-14z"/><path d="M28 19c-5-5-4-11 2-14 4 3 5 7 3 12M39 18c2-6 7-8 12-5-1 6-5 9-10 9"/><circle cx="36" cy="27" r="2" fill="#fff"/></g></svg>`,
+    purple:`<svg ${common}><g fill="currentColor"><circle cx="27" cy="24" r="10"/><path d="M16 34c-5 5-6 13-2 18 3 4 8 6 14 6h25c8 0 14-5 14-12 0-7-6-12-14-12H38l-6-7z"/><path d="M56 31c8-3 13 0 17 5-4 4-10 5-16 2z"/></g><circle cx="30" cy="22" r="2.2" fill="#fff"/></svg>`,
+    orange:`<svg ${common}><g fill="currentColor"><path d="M13 49h54v12H13z"/><path d="M22 49V34h9v15M43 49V29h10v20"/><circle cx="24" cy="63" r="7"/><circle cx="57" cy="63" r="7"/></g><rect x="35" y="37" width="15" height="9" rx="2" fill="#fff"/><text x="42.5" y="44" text-anchor="middle" font-size="8" font-weight="800" fill="currentColor">7</text></svg>`
+  };
+  return arts[suitId]||'';
+}
 function cardEl(c,opts={}){
   const s=suit(c.suitId), d=document.createElement("div"); d.className="card "+(opts.selectable?"selectable ":"")+(opts.selected?"selected ":"")+(opts.extraClass||"");
-  d.dataset.cardId=c.id;
-  d.dataset.suit=c.suitId;
-  d.dataset.symbol=s.symbol;
+  d.dataset.cardId=c.id; d.dataset.suit=c.suitId; d.dataset.symbol=s.symbol;
   if(opts.zone)d.dataset.zone=opts.zone;
-  d.style.borderTop=`5px solid ${s.color}`; d.title=`${s.name} ${c.number}`;
-  d.innerHTML=`<span class="corner tl" style="color:${s.color}">${c.number}</span><span class="number">${c.number}</span><span class="symbol" style="color:${s.color}">${s.symbol}</span><span class="corner br" style="color:${s.color}">${c.number}</span>`;
+  d.style.setProperty('--suit-color',s.color); d.title=`${s.name} ${c.number}`;
+  d.innerHTML=`<span class="corner tl" style="color:${s.color}">${c.number}</span><span class="number">${c.number}</span><span class="figure" style="color:${s.color}">${suitArt(c.suitId)}</span><span class="corner br" style="color:${s.color}">${c.number}</span>`;
   if(opts.onclick)d.onclick=opts.onclick; return d;
 }
 function render(){
@@ -225,8 +239,9 @@ function renderAllTableaus(){
     const controlled=new Set(Object.entries(state.controllers||{}).filter(([,ids])=>ids.includes(p.id)).map(([id])=>id));
     state.suits.forEach(s=>{
       const cards=groups[s.id], stack=document.createElement("div"); stack.className="suit-stack";
+      stack.style.setProperty("--stack-count",Math.max(cards.length,1));
       const onePoint=controlled.has(s.id);
-      stack.innerHTML=`<div class="stack-label" style="color:${s.color}"><span>${s.symbol}</span>${s.name}<small>${cards.length}</small>${onePoint?'<em class="one-point-badge">1 PT</em>':''}</div>`;
+      stack.innerHTML=`<div class="stack-label" style="color:${s.color}">${s.name}<small>${cards.length}</small>${onePoint?'<em class="one-point-badge">1 PT</em>':''}</div>`;
       const pile=document.createElement("div"); pile.className="stack-cards";
       cards.forEach((c,i)=>{const n=cardEl(c,{zone:"tableau",extraClass:"stacked-card"}); n.style.setProperty("--stack-i",i); pile.appendChild(n)});
       stack.appendChild(pile); grid.appendChild(stack);

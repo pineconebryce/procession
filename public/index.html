@@ -9,7 +9,7 @@
 <body>
 <div id="app">
   <header class="topbar">
-    <button id="homeBtn" class="brand home-brand" aria-label="Return to home"><span class="brand-mark">✦</span><div><b>PROCESSION</b></div></button>
+    <div class="top-left-nav"><button id="homeBtn" class="brand home-brand" aria-label="Return to home"><span class="brand-mark">✦</span><div><b>PROCESSION</b></div></button><button id="howtoBtn" class="howto-button" aria-label="How to play"><span class="qmark">?</span> How to Play</button></div>
     <div id="roomBadge" class="room-badge hidden"></div>
   </header>
 
@@ -76,6 +76,13 @@
   </main>
 
   <div id="modal" class="modal hidden"><div class="modal-card"><div id="modalTitle"></div><div id="modalBody"></div><div id="modalActions" class="modal-actions"></div></div></div>
+  <div id="howtoModal" class="modal hidden"><div class="modal-card howto-card"><div class="modal-heading-row"><div><div class="eyebrow">PROCESSION</div><h2>How to Play</h2></div><button id="closeHowto" aria-label="Close">×</button></div><div class="howto-grid">
+    <div class="howto-step"><div class="howto-num">1</div><div class="howto-demo"><div class="mini-card">7</div><span class="arrow">→</span><div class="mini-card">7</div></div><div class="howto-copy"><h4>Play one card</h4><p>Place a card at the end of the Procession.</p></div></div>
+    <div class="howto-step"><div class="howto-num">2</div><div class="howto-demo"><div class="mini-card protected">4</div><div class="mini-card protected">6</div><div class="mini-card protected">8</div></div><div class="howto-copy"><h4>Protect the end</h4><p>Your card protects that many cards at the end. Protected cards glow gold and can never be picked up.</p></div></div>
+    <div class="howto-step"><div class="howto-num">3</div><div class="howto-demo"><div class="mini-card">4</div><div class="mini-card">6</div><div class="mini-card">9</div><span class="arrow">→</span><div class="mini-card">4</div></div><div class="howto-copy"><h4>Pick up cards</h4><p>Among the unprotected cards, pick up every card of your color or the same number or lower.</p></div></div>
+    <div class="howto-step"><div class="howto-num">4</div><div class="howto-demo"><div class="mini-card">2</div><div class="mini-card">5</div><div class="mini-card">8</div></div><div class="howto-copy"><h4>Win a suit</h4><p>Have the most cards of a suit and every card of that suit is worth 1 point.</p></div></div>
+    <div class="howto-step"><div class="howto-num">5</div><div class="howto-demo"><div class="mini-card">3</div><span class="arrow">+</span><div class="mini-card">1</div></div><div class="howto-copy"><h4>Lowest score wins</h4><p>Most cards score their printed number. The player with the lowest total wins.</p></div></div>
+  </div><div class="howto-note">Hover a card in your hand to preview protected cards and the cards it would pick up.</div><div class="modal-actions"><button id="closeHowto2" class="primary">Got it</button></div></div></div>
 </div>
 <script src="/app.js"></script>
 </body>
