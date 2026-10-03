@@ -204,3 +204,17 @@ button{border:1px solid #4b4941;background:#252520;color:var(--text);padding:11p
 .full-board{display:block}.full-board .table{width:100%;max-width:none}.full-board + *{max-width:none}
 @media(max-width:900px){.header-player-name{max-width:70px}.turn-label{display:none}.header-right{gap:7px}.topbar{padding:8px 16px}}
 @media(max-width:650px){.header-players{justify-content:flex-start}.header-player{padding:4px 6px}.header-player-name{max-width:58px}.header-player-score{display:none}.top-left-nav .howto-button{padding:7px 9px;font-size:10px}.home-brand b{font-size:12px}}
+/* Card artwork refresh: strong suit color + detailed left-facing procession characters. */
+.card{border:2px solid var(--suit-color)!important;border-top-width:7px!important;background:#fffdf7;box-shadow:0 9px 22px #0007, inset 0 0 0 3px color-mix(in srgb,var(--suit-color) 16%,transparent)}
+.card[data-suit="red"]{background:linear-gradient(145deg,#fff7f5,#f7d4d1)}
+.card[data-suit="yellow"]{background:linear-gradient(145deg,#fffef1,#f6e7a9)}
+.card[data-suit="blue"]{background:linear-gradient(145deg,#f3f9ff,#cfe4fb)}
+.card[data-suit="green"]{background:linear-gradient(145deg,#f4fbf1,#d3eecf)}
+.card[data-suit="purple"]{background:linear-gradient(145deg,#fcf8ff,#e4d2f0)}
+.card[data-suit="orange"]{background:linear-gradient(145deg,#fff8ef,#f2dcc5)}
+.card .corner{font-size:20px;font-weight:950;line-height:1;z-index:5;text-shadow:0 1px 0 #fff,0 0 3px #fff}
+.card .tl{top:7px;left:9px}.card .br{bottom:7px;right:9px}
+.card .figure{top:31px;bottom:16px;left:7px;right:7px;z-index:2}
+.card .figure svg{width:100%;height:100%;max-height:78px}
+.stacked-card .corner{font-size:13px}.stacked-card .tl{top:4px;left:4px}.stacked-card .br{right:4px;bottom:4px}
+.suit-stack:hover .stacked-card .corner{font-size:18px}.suit-stack:hover .stacked-card .tl{left:6px;top:6px}.suit-stack:hover .stacked-card .br{right:6px;bottom:6px}
