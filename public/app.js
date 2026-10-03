@@ -49,9 +49,9 @@ function connect(){
   ws=socket;
   socket.onmessage=e=>{const m=JSON.parse(e.data); if(m.type==="error"){ $("lobbyError").textContent=m.message; return;} if(m.type==="joined"){me=m.playerId; $("lobbyError").textContent=""; show("room"); $("roomCodeTitle").textContent=m.code; $("roomBadge").textContent=m.code; $("roomBadge").classList.remove("hidden");} if(m.type==="state"){const previousStatus=state?.status; const before=captureCardPositions(); state=m.state; if(state.status!=="selection"){selected.clear(); submittedSelection=false;} render(); animateCardMoves(before); if(state.status==="final" && previousStatus!=="final") showEndgameAnnouncement();}};
   socket.onclose=()=>{
-    if(ws===socket) ws=null;
-    if(ws===socket && !manualHome && state) setTimeout(connect,1200);
-    else if(!manualHome && state) setTimeout(connect,1200);
+    const isCurrent=ws===socket;
+    if(isCurrent) ws=null;
+    if(isCurrent && !manualHome && state) setTimeout(connect,1200);
   };
 }
 function send(x){if(ws?.readyState===1)ws.send(JSON.stringify(x))}
