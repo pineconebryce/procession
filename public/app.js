@@ -85,14 +85,14 @@ $("code").oninput=e=>e.target.value=e.target.value.replace(/[^a-z0-9]/gi,"").toU
 
 function suit(id){return state.suits.find(s=>s.id===id)}
 function suitArt(suitId){
-  const common='viewBox="0 0 120 92" aria-hidden="true" focusable="false"';
+  const common='viewBox="0 0 80 80" aria-hidden="true" focusable="false"';
   const arts={
-    red:`<svg ${common}><g stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"><circle cx="39" cy="20" r="7" fill="currentColor" stroke="none"/><path d="M39 28l-4 19 13 8 8-13 10 9 14-4"/><path d="M40 46l-10 25M49 54l11 18"/><path d="M51 31c9-8 17-9 25-5"/><path d="M72 27c-5-10 1-17 9-14M77 29c7-9 15-6 17 2M68 25c-2-9-9-11-13-5"/></g><circle cx="43" cy="18" r="1.5" fill="#fff"/></svg>`,
-    blue:`<svg ${common}><g fill="currentColor"><ellipse cx="52" cy="48" rx="27" ry="24"/><circle cx="28" cy="27" r="14"/><ellipse cx="17" cy="31" rx="9" ry="13"/><path d="M72 43c15-8 25-1 27 8-6 5-15 5-23 1z"/><rect x="43" y="45" width="22" height="15" rx="3" fill="#fff"/><text x="54" y="57" text-anchor="middle" font-size="12" font-weight="900" fill="currentColor">3</text><path d="M36 67l-5 12M58 68l5 11" stroke="currentColor" stroke-width="6" stroke-linecap="round"/></g><circle cx="25" cy="25" r="2.5" fill="#fff"/></svg>`,
-    green:`<svg ${common}><g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 77c7-13 9-27 9-43 0-17 8-25 19-25 9 0 14 7 14 16 0 7-4 11-10 14l10 6c8 5 15 9 22 10"/><path d="M57 18c-3-9 1-15 8-18 5 5 4 11-2 16M49 15c-5-7-2-14 4-17 4 5 3 11-1 15"/><circle cx="57" cy="20" r="2" fill="currentColor" stroke="none"/><path d="M35 59l-7 18M55 61l8 17"/></g></svg>`,
-    yellow:`<svg ${common}><g fill="currentColor"><circle cx="34" cy="22" r="9"/><path d="M21 35c4-8 10-10 17-10 9 0 14 6 15 14l7 7-10 6-7-7-4 14H19l5-15z"/><path d="M57 42l12 5 9-5 9 5-9 7 7 8-11 2-6-8-8 8-10-3 7-9-10-5z"/><path d="M25 58l-7 17M45 58l5 18" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M27 12c-7-5-7-11-1-15 5 3 7 8 4 13M41 13c2-7 8-9 13-5-1 7-6 10-11 8"/></g><circle cx="37" cy="20" r="2" fill="#fff"/></svg>`,
-    purple:`<svg ${common}><g fill="currentColor"><circle cx="35" cy="22" r="10"/><path d="M20 37c6-8 15-11 28-9 11 2 19 9 24 19l18 5-4 11-20-4-7 12H24l5-15-14-5z"/><path d="M71 41c11-7 20-4 26 3-5 6-13 8-22 4z"/><path d="M31 60l-6 17M54 61l7 16" stroke="#fff" stroke-width="5" stroke-linecap="round"/></g><circle cx="38" cy="20" r="2" fill="#fff"/></svg>`,
-    orange:`<svg ${common}><g fill="currentColor"><path d="M16 53h67l12 8H9z"/><path d="M27 53V35h12v18M53 53V29h14v24"/><circle cx="25" cy="64" r="10"/><circle cx="75" cy="64" r="10"/><rect x="42" y="35" width="21" height="14" rx="3" fill="#fff"/><text x="52.5" y="46" text-anchor="middle" font-size="12" font-weight="900" fill="currentColor">7</text><path d="M69 29l10-6 9 7-10 7z"/></g></svg>`
+    red:`<svg ${common}><g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="29" cy="19" r="7" fill="currentColor" stroke="none"/><path d="M29 27l-7 18 10 4 8-14 7 10 10-2-10-14"/><path d="M25 47l-5 17M36 49l8 14"/><path d="M39 20c10-8 18-7 24-1"/><path d="M57 15c-3-8 2-13 8-10M61 20c6-8 13-5 14 2M54 12c-1-8-7-9-10-4"/></g></svg>`,
+    blue:`<svg ${common}><g fill="currentColor"><path d="M24 13c7 0 10 5 10 10v5h8c4 0 7 3 7 7v18c0 7-5 12-12 12H25c-7 0-12-5-12-12V35c0-7 5-12 11-12z"/><path d="M54 31c8-3 16 2 16 10 0 7-5 12-12 12h-8v-8h8c2 0 4-2 4-4 0-3-3-5-6-4z"/><path d="M15 54h-5c-3 0-5-2-5-5s2-5 5-5h5z"/></g><circle cx="29" cy="28" r="3" fill="#fff"/><rect x="33" y="46" width="18" height="12" rx="2" fill="#fff" opacity=".9"/><text x="42" y="55" text-anchor="middle" font-size="10" font-weight="800" fill="currentColor">3</text></svg>`,
+    green:`<svg ${common}><g fill="currentColor"><path d="M17 58c5-9 7-19 7-29 0-8 6-14 15-14 11 0 20 8 20 19 0 8-5 14-12 17l10 11H42l-8-10-6 10H12z"/><circle cx="48" cy="29" r="2.5" fill="#fff"/><path d="M55 18c8-4 13-1 15 4-5 1-9 0-12-2z"/></g></svg>`,
+    yellow:`<svg ${common}><g fill="currentColor"><path d="M31 17c8 0 13 6 13 13v9l12 9v13H40l-6-13-8 13H15l7-17V31c0-8 3-14 9-14z"/><path d="M28 19c-5-5-4-11 2-14 4 3 5 7 3 12M39 18c2-6 7-8 12-5-1 6-5 9-10 9"/><circle cx="36" cy="27" r="2" fill="#fff"/></g></svg>`,
+    purple:`<svg ${common}><g fill="currentColor"><circle cx="27" cy="24" r="10"/><path d="M16 34c-5 5-6 13-2 18 3 4 8 6 14 6h25c8 0 14-5 14-12 0-7-6-12-14-12H38l-6-7z"/><path d="M56 31c8-3 13 0 17 5-4 4-10 5-16 2z"/></g><circle cx="30" cy="22" r="2.2" fill="#fff"/></svg>`,
+    orange:`<svg ${common}><g fill="currentColor"><path d="M13 49h54v12H13z"/><path d="M22 49V34h9v15M43 49V29h10v20"/><circle cx="24" cy="63" r="7"/><circle cx="57" cy="63" r="7"/></g><rect x="35" y="37" width="15" height="9" rx="2" fill="#fff"/><text x="42.5" y="44" text-anchor="middle" font-size="8" font-weight="800" fill="currentColor">7</text></svg>`
   };
   return arts[suitId]||'';
 }
@@ -127,7 +127,18 @@ function renderGame(){
   const current=state.players.find(p=>p.id===state.currentPlayer);
   $("statusBar").textContent=state.message+(current?` — ${current.name}`:"");
   $("deckCount").textContent=`DRAW PILE ${state.deckCount}`;
-  $("scoreboard").innerHTML=state.players.map(p=>`<div class="score-row ${p.id===state.currentPlayer?"active":""}"><span>${esc(p.name)}${p.id===me?" · YOU":""}</span><span class="score">${p.score}</span></div>`).join("");
+  const currentId=state.currentPlayer;
+  $("headerPlayers").innerHTML=state.players.map(p=>{
+    const active=p.id===currentId;
+    const mine=p.id===me;
+    const bot=p.isBot;
+    return `<div class="header-player ${active?"active-turn":""} ${mine?"is-me":""}" title="${active?(mine?"Your turn":"Their turn"):""}">` +
+      `<span class="header-player-indicator">${active?"▶":""}</span>` +
+      `<span class="header-player-dot ${bot?"bot":""}">${bot?"🤖":"●"}</span>` +
+      `<span class="header-player-name">${esc(p.name)}${mine?" · YOU":""}</span>` +
+      `<span class="header-player-score">${p.score}</span>` +
+      `${active?`<span class="turn-label">${mine?"YOUR TURN":"TURN"}</span>`:""}</div>`;
+  }).join("");
   const mep=state.players.find(p=>p.id===me); if(!mep)return;
 
   $("processionCount").textContent=`${state.procession.length} CARDS`;

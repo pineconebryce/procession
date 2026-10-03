@@ -189,26 +189,18 @@ button{border:1px solid #4b4941;background:#252520;color:var(--text);padding:11p
 .howto-button:hover{background:#302f29}
 @media(max-width:760px){.top-left-nav{gap:3px}.howto-button{padding:9px 10px;font-size:11px}.home-brand{padding-right:2px}.home-brand b{font-size:12px}.title-cards{overflow-x:auto;justify-content:flex-start;padding:0 5px}.title-card{flex:0 0 46px}}
 
-/* v20: full-width Procession with compact Players panel beside Hand/Tableaus */
-@media(min-width:801px){
-  .game-layout{display:grid;grid-template-columns:minmax(0,1fr) 230px;column-gap:16px;row-gap:0;align-items:start}
-  .game-layout>.table{display:contents}
-  .game-layout>.side-panel{grid-column:2;grid-row:4 / span 6;width:230px;max-width:230px;align-self:start}
-  .game-layout>.table-title:nth-of-type(1){grid-column:1 / -1;grid-row:1}
-  .game-layout>#procession{grid-column:1 / -1;grid-row:2}
-  .game-layout>.procession-direction{grid-column:1 / -1;grid-row:3}
-  .game-layout>.table-title:nth-of-type(2){grid-column:1;grid-row:4}
-  .game-layout>#previewKey{grid-column:1;grid-row:5}
-  .game-layout>#hand{grid-column:1;grid-row:6}
-  .game-layout>.table-title:nth-of-type(3){grid-column:1;grid-row:7}
-  .game-layout>#tableaus{grid-column:1;grid-row:8}
-  .game-layout>#gameOverPanel{grid-column:1 / -1;grid-row:9}
-  .game-layout>.table-title:nth-of-type(1){margin-top:5px}
-  .game-layout>#procession{min-height:150px}
-  .game-layout>.side-panel{padding:16px}
-}
-@media(max-width:800px){
-  .game-layout{display:flex;flex-direction:column}
-  .game-layout>.side-panel{order:4;width:100%;max-width:none}
-  .game-layout>.table{order:1}
-}
+/* v21 layout: compact player status in header, full-width Procession board */
+.topbar{gap:18px;min-height:72px;height:auto;padding:8px 28px}
+.header-right{display:flex;align-items:center;justify-content:flex-end;gap:14px;min-width:0;flex:1}
+.header-players{display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:0;overflow-x:auto;padding:2px 0;scrollbar-width:none}
+.header-players::-webkit-scrollbar{display:none}
+.header-player{display:flex;align-items:center;gap:5px;min-height:32px;padding:5px 8px;border:1px solid transparent;border-radius:8px;color:#aaa69b;white-space:nowrap;font-size:11px;position:relative;transition:background .18s ease,border-color .18s ease,color .18s ease,box-shadow .18s ease}
+.header-player.is-me{color:#ddd8cc}
+.header-player.active-turn{color:#f3e4b0;background:#201d14;border-color:#8d7431;box-shadow:0 0 0 1px #8d743133,0 3px 12px #0004}
+.header-player-indicator{width:9px;color:var(--gold);font-size:9px;line-height:1;text-align:center}
+.header-player-dot{font-size:8px;color:#77736b;line-height:1}.header-player-dot.bot{font-size:12px;filter:saturate(.7)}
+.header-player-name{font-weight:600;max-width:110px;overflow:hidden;text-overflow:ellipsis}.header-player-score{font-weight:800;color:#e3d9bc;min-width:16px;text-align:right}
+.turn-label{font-size:8px;letter-spacing:.09em;color:var(--gold);font-weight:800;margin-left:2px}
+.full-board{display:block}.full-board .table{width:100%;max-width:none}.full-board + *{max-width:none}
+@media(max-width:900px){.header-player-name{max-width:70px}.turn-label{display:none}.header-right{gap:7px}.topbar{padding:8px 16px}}
+@media(max-width:650px){.header-players{justify-content:flex-start}.header-player{padding:4px 6px}.header-player-name{max-width:58px}.header-player-score{display:none}.top-left-nav .howto-button{padding:7px 9px;font-size:10px}.home-brand b{font-size:12px}}

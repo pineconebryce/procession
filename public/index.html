@@ -10,7 +10,7 @@
 <div id="app">
   <header class="topbar">
     <div class="top-left-nav"><button id="homeBtn" class="brand home-brand" aria-label="Return to home"><span class="brand-mark">✦</span><div><b>PROCESSION</b></div></button><button id="howtoBtn" class="howto-button" aria-label="How to play"><span class="qmark">?</span> How to Play</button></div>
-    <div id="roomBadge" class="room-badge hidden"></div>
+    <div class="header-right"><div id="headerPlayers" class="header-players" aria-label="Players"></div><div id="roomBadge" class="room-badge hidden"></div></div>
   </header>
 
   <main>
@@ -48,7 +48,7 @@
 
     <section id="game" class="screen hidden">
       <div id="statusBar" class="status-bar"></div>
-      <div class="game-layout">
+      <div class="game-layout full-board">
         <div class="table">
           <div class="table-title"><span>THE PROCESSION</span><span id="processionCount"></span><span id="deckCount"></span></div>
           <div id="procession" class="procession"></div><div class="procession-direction" aria-label="Cards move toward the left">←</div>
@@ -59,18 +59,6 @@
           <div id="tableaus" class="tableaus"></div>
           <div id="gameOverPanel" class="gameover-panel hidden"></div>
         </div>
-        <aside class="side-panel">
-          <div class="section-title">PLAYERS</div>
-          <div id="scoreboard"></div>
-          <div class="section-title">HOW TO PLAY</div>
-          <div class="mini-rules">
-            <div>Play a card to the end of the Procession.</div>
-            <div>Your card protects that many cards at the end, shown in gold.</div>
-            <div>Pick up unprotected cards of your color or the same number or lower.</div>
-            <div>Win a suit and each card of that suit is worth 1 point.</div>
-            <div>Lowest score wins.</div>
-          </div>
-        </aside>
       </div>
     </section>
   </main>
