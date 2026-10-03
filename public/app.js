@@ -97,7 +97,7 @@ function suit(id){return state.suits.find(s=>s.id===id)}
 function suitArt(suitId){
   const names={red:"red",yellow:"yellow",blue:"blue",green:"green",purple:"purple",orange:"orange"};
   const file=names[suitId];
-  return file?`<img src="/assets/suits_trans/${file}.png" alt="" aria-hidden="true" draggable="false">`:"";
+  return file?`<img src="/assets/suits/${file}.png" alt="" aria-hidden="true" draggable="false">`:"";
 }
 
 function cardEl(c,opts={}){
