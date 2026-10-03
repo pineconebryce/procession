@@ -42,9 +42,17 @@ function animateCardMoves(before){
 }
 
 const $=id=>document.getElementById(id);
-function connect(){ manualHome=false; ws=new WebSocket((location.protocol==="https:"?"wss://":"ws://")+location.host);
-  ws.onmessage=e=>{const m=JSON.parse(e.data); if(m.type==="error"){ $("lobbyError").textContent=m.message; return;} if(m.type==="joined"){me=m.playerId; $("lobbyError").textContent=""; show("room"); $("roomCodeTitle").textContent=m.code; $("roomBadge").textContent=m.code; $("roomBadge").classList.remove("hidden");} if(m.type==="state"){const previousStatus=state?.status; const before=captureCardPositions(); state=m.state; if(state.status!=="selection"){selected.clear(); submittedSelection=false;} render(); animateCardMoves(before); if(state.status==="final" && previousStatus!=="final") showEndgameAnnouncement();}};
-  ws.onclose=()=>{if(!manualHome && state) setTimeout(connect,1200)};
+function connect(){
+  if(ws && (ws.readyState===WebSocket.OPEN || ws.readyState===WebSocket.CONNECTING)) return;
+  manualHome=false;
+  const socket=new WebSocket((location.protocol==="https:"?"wss://":"ws://")+location.host);
+  ws=socket;
+  socket.onmessage=e=>{const m=JSON.parse(e.data); if(m.type==="error"){ $("lobbyError").textContent=m.message; return;} if(m.type==="joined"){me=m.playerId; $("lobbyError").textContent=""; show("room"); $("roomCodeTitle").textContent=m.code; $("roomBadge").textContent=m.code; $("roomBadge").classList.remove("hidden");} if(m.type==="state"){const previousStatus=state?.status; const before=captureCardPositions(); state=m.state; if(state.status!=="selection"){selected.clear(); submittedSelection=false;} render(); animateCardMoves(before); if(state.status==="final" && previousStatus!=="final") showEndgameAnnouncement();}};
+  socket.onclose=()=>{
+    if(ws===socket) ws=null;
+    if(ws===socket && !manualHome && state) setTimeout(connect,1200);
+    else if(!manualHome && state) setTimeout(connect,1200);
+  };
 }
 function send(x){if(ws?.readyState===1)ws.send(JSON.stringify(x))}
 function show(id){["lobby","room","game"].forEach(x=>$(x).classList.toggle("hidden",x!==id))}
@@ -55,12 +63,12 @@ $("addBotBtn").onclick=()=>send({type:"addBot",difficulty:$("botDifficulty").val
 $("homeBtn").onclick=()=>{
   manualHome=true;
   state=null; me=null; selected.clear(); submittedSelection=false; lastEndKey=null;
-  if(ws){try{ws.close();}catch(e){} ws=null;}
+  if(ws){const oldSocket=ws; ws=null; try{oldSocket.close();}catch(e){}}
   $("roomBadge").classList.add("hidden");
   $("code").value="";
+  $("lobbyError").textContent="";
   show("lobby");
-  // Re-establish a fresh WebSocket so Create room / Join work immediately after returning home.
-  setTimeout(connect, 50);
+  setTimeout(connect,50);
 };
 $("howtoBtn").onclick=()=>$("howtoModal").classList.remove("hidden");
 $("closeHowto").onclick=()=>$("howtoModal").classList.add("hidden");
