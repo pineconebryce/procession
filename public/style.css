@@ -320,3 +320,51 @@ button{border:1px solid #4b4941;background:#252520;color:var(--text);padding:11p
 @media (max-width:360px){
   .procession{gap:4px;padding-left:0;padding-right:0}
 }
+
+
+/* v29: touch-first card preview and swipe-up play. */
+.mobile-preview-selected{outline:3px solid var(--gold)!important;transform:translateY(-8px) scale(1.02)!important;box-shadow:0 12px 28px #0009!important}
+.card.swipe-ready{transform:translateY(-22px) scale(1.04)!important;outline:3px solid var(--gold)!important}
+@media (max-width:650px){
+  .card.selectable:hover{transform:none}
+  .card.selectable{touch-action:none}
+  .card .figure{
+    top:50%;left:50%;right:auto;bottom:auto;
+    width:72%;height:72%;
+    transform:translate(-50%,-50%);
+  }
+  .card[data-suit="yellow"] .figure img,.card[data-suit="blue"] .figure img,.card[data-suit="orange"] .figure img{width:100%;max-width:100%}
+  .procession .card .figure{
+    top:50%;left:50%;right:auto;bottom:auto;
+    width:68%;height:68%;
+    transform:translate(-50%,-50%);
+  }
+}
+
+/* v29 mobile card interaction and artwork fit. */
+@media (max-width:650px){
+  #hand .card.selectable{touch-action:none;}
+  #hand .card.selected,
+  #hand .card.preview-source{transform:translateY(-8px);outline:3px solid var(--gold);outline-offset:2px;}
+  #hand .card .figure{
+    top:50%;
+    left:50%;
+    right:auto;
+    bottom:auto;
+    width:72%;
+    height:58%;
+    transform:translate(-50%,-50%);
+    overflow:visible;
+  }
+  #hand .card .figure img{
+    width:100%;
+    height:100%;
+    max-width:100%;
+    max-height:100%;
+    object-fit:contain;
+    object-position:center center;
+  }
+  #hand .card[data-suit="yellow"] .figure img,
+  #hand .card[data-suit="blue"] .figure img{width:100%;max-width:100%;}
+  #hand .card[data-suit="orange"] .figure img{width:104%;max-width:104%;}
+}

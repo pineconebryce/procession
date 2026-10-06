@@ -150,15 +150,32 @@ function renderGame(){
   renderAllTableaus();
 
   $("hand").innerHTML=""; const canPlay=(state.status==="playing"||state.status==="final")&&state.currentPlayer===me;
-  mep.hand.forEach(c=>{const node=cardEl(c,{zone:"hand",selectable:canPlay,onclick:()=>canPlay&&send({type:"play",cardId:c.id})}); if(canPlay)attachHandHover(c,node); $("hand").appendChild(node);});
-  $("handHint").textContent=canPlay?"HOVER TO PREVIEW · CLICK TO PLAY":state.status==="selection"?"SELECT 2 CARDS":"";
+  const touchUI=window.matchMedia && window.matchMedia("(hover: none), (pointer: coarse)").matches;
+  mep.hand.forEach(c=>{
+    const node=cardEl(c,{zone:"hand",selectable:canPlay,onclick:()=>{
+      if(!canPlay)return;
+      if(touchUI){ previewHandCard(c,node,state.status==="final"); }
+      else send({type:"play",cardId:c.id});
+    }});
+    if(canPlay)attachHandHover(c,node,state.status==="final",touchUI);
+    $("hand").appendChild(node);
+  });
+  $("handHint").textContent=canPlay?(touchUI?"TAP A CARD TO PREVIEW · SWIPE UP TO PLAY":"HOVER TO PREVIEW · CLICK TO PLAY"):state.status==="selection"?"SELECT 2 CARDS":"";
 
   if(state.status==="final"){
     const final=state.currentPlayer===me;
     if(final){
       $("hand").innerHTML="";
-      mep.hand.forEach(c=>{const node=cardEl(c,{zone:"hand",selectable:true,onclick:()=>send({type:"finalPlay",cardId:c.id})}); attachHandHover(c,node,true); $("hand").appendChild(node);});
-      $("handHint").textContent="FINAL TURN · CLICK A CARD TO PLAY";
+      const touchUI=window.matchMedia && window.matchMedia("(hover: none), (pointer: coarse)").matches;
+      mep.hand.forEach(c=>{
+        const node=cardEl(c,{zone:"hand",selectable:true,onclick:()=>{
+          if(touchUI) previewHandCard(c,node,true);
+          else send({type:"finalPlay",cardId:c.id});
+        }});
+        attachHandHover(c,node,true,touchUI);
+        $("hand").appendChild(node);
+      });
+      $("handHint").textContent=touchUI?"TAP A CARD TO PREVIEW · SWIPE UP TO PLAY":"FINAL TURN · HOVER TO PREVIEW · CLICK TO PLAY";
     } else {
       $("handHint").textContent="WAITING FOR FINAL TURNS";
     }
@@ -192,27 +209,93 @@ function collectionPreview(played){
   });
   return {protectedCount,pickupIds,protectedStart};
 }
-function attachHandHover(card,node,allowFinal=false){
-  node.addEventListener("mouseenter",()=>{
-    if(!state || (state.status!=="playing" && !(allowFinal && state.status==="final")) || state.currentPlayer!==me)return;
-    clearPreview();
-    const preview=collectionPreview(card);
-    const cards=Array.from(document.querySelectorAll("#procession .card"));
-    cards.forEach(x=>{
-      if(preview.pickupIds.has(x.dataset.cardId)) x.classList.add("preview-pickup");
-    });
-    if(preview.protectedCount){
-      cards.slice(Math.max(0,cards.length-preview.protectedCount)).forEach(x=>x.classList.add("preview-protected"));
-    }
-    const key=$("previewKey");
-    key.textContent=preview.protectedCount
-      ? `Gold highlight = ${preview.protectedCount} protected card${preview.protectedCount===1?"":"s"} excluded by the number ${card.number}.`
-      : `No cards are protected by ${card.number}; collection can consider the entire Procession.`;
-    key.classList.remove("hidden");
-    node.classList.add("preview-source");
-    drawProtectionBracket(preview.protectedCount, card.number);
+function previewHandCard(card,node,allowFinal=false){
+  if(!state || (state.status!=="playing" && !(allowFinal && state.status==="final")) || state.currentPlayer!==me)return;
+  clearPreview();
+  document.querySelectorAll("#hand .card").forEach(x=>x.classList.remove("mobile-preview-selected"));
+  const preview=collectionPreview(card);
+  const cards=Array.from(document.querySelectorAll("#procession .card"));
+  cards.forEach(x=>{
+    if(preview.pickupIds.has(x.dataset.cardId)) x.classList.add("preview-pickup");
   });
-  node.addEventListener("mouseleave",clearPreview);
+  if(preview.protectedCount){
+    cards.slice(Math.max(0,cards.length-preview.protectedCount)).forEach(x=>x.classList.add("preview-protected"));
+  }
+  const key=$("previewKey");
+  key.textContent=preview.protectedCount
+    ? `Gold highlight = ${preview.protectedCount} protected card${preview.protectedCount===1?"":"s"} excluded by the number ${card.number}.`
+    : `No cards are protected by ${card.number}; collection can consider the entire Procession.`;
+  key.classList.remove("hidden");
+  node.classList.add("preview-source","mobile-preview-selected");
+  drawProtectionBracket(preview.protectedCount, card.number);
+}
+
+function commitPreviewedCard(card,node,allowFinal=false){
+  if(!state || state.currentPlayer!==me)return;
+  if(state.status==="final" && allowFinal){ send({type:"finalPlay",cardId:card.id}); return; }
+  if(state.status==="playing") send({type:"play",cardId:card.id});
+}
+
+function applyHandPreview(card,node,allowFinal=false){
+  if(!state || (state.status!=="playing" && !(allowFinal && state.status==="final")) || state.currentPlayer!==me)return;
+  clearPreview();
+  document.querySelectorAll("#hand .card").forEach(x=>x.classList.remove("selected","preview-source"));
+  const preview=collectionPreview(card);
+  const cards=Array.from(document.querySelectorAll("#procession .card"));
+  cards.forEach(x=>{
+    if(preview.pickupIds.has(x.dataset.cardId)) x.classList.add("preview-pickup");
+  });
+  if(preview.protectedCount){
+    cards.slice(Math.max(0,cards.length-preview.protectedCount)).forEach(x=>x.classList.add("preview-protected"));
+  }
+  const key=$("previewKey");
+  key.textContent=preview.protectedCount
+    ? `Gold highlight = ${preview.protectedCount} protected card${preview.protectedCount===1?"":"s"} excluded by the number ${card.number}.`
+    : `No cards are protected by ${card.number}; collection can consider the entire Procession.`;
+  key.classList.remove("hidden");
+  node.classList.add("preview-source","selected");
+  drawProtectionBracket(preview.protectedCount, card.number);
+}
+function commitHandCard(card,allowFinal=false){
+  if(!state || state.currentPlayer!==me)return;
+  if(state.status==="final" && allowFinal){send({type:"finalPlay",cardId:card.id});return;}
+  if(state.status==="playing")send({type:"play",cardId:card.id});
+}
+function attachHandHover(card,node,allowFinal=false){
+  const mobile=()=>window.matchMedia("(max-width:650px)").matches;
+  let touchStartY=null, touchStartX=null, suppressClickUntil=0;
+  node.addEventListener("mouseenter",()=>{
+    if(mobile())return;
+    applyHandPreview(card,node,allowFinal);
+  });
+  node.addEventListener("mouseleave",()=>{if(!mobile())clearPreview();});
+  node.addEventListener("touchstart",e=>{
+    if(!mobile())return;
+    const t=e.changedTouches[0]; touchStartY=t.clientY; touchStartX=t.clientX;
+    e.preventDefault();
+    applyHandPreview(card,node,allowFinal);
+  },{passive:false});
+  node.addEventListener("touchend",e=>{
+    if(!mobile() || touchStartY===null)return;
+    const t=e.changedTouches[0];
+    const dy=t.clientY-touchStartY, dx=t.clientX-touchStartX;
+    touchStartY=null; touchStartX=null;
+    suppressClickUntil=Date.now()+500;
+    if(dy < -45 && Math.abs(dy)>Math.abs(dx)){
+      commitHandCard(card,allowFinal);
+    }else{
+      applyHandPreview(card,node,allowFinal);
+    }
+    e.preventDefault();
+  },{passive:false});
+  node.onclick=()=>{
+    if(Date.now()<suppressClickUntil)return;
+    if(mobile()){
+      applyHandPreview(card,node,allowFinal);
+      return;
+    }
+    commitHandCard(card,allowFinal);
+  };
 }
 function drawProtectionBracket(count, number){
   removeProtectionBracket();
