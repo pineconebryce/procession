@@ -393,8 +393,14 @@ function showGameOver(){
     const points=suitPointsForPlayer(p);
     const n=index+1;
     const placement=n===1?"1st":n===2?"2nd":n===3?"3rd":`${n}th`;
+    const wifeWinnerMessage = (state.code.length + state.players.length) % 2 === 0
+      ? "WINNER! I LOVE YOU! YOU'RE GOING TO BE THE BEST MOM!!"
+      : "YOU WON BECAUSE YOU'RE SMART BUT I WON BECAUSE WE MET <3";
+    const wifeLoserMessage = (state.code.length + state.players.length) % 2 === 0
+      ? "It's OK. You're kinda doing a lot right now!"
+      : "It's ok. I love you, my pretty pretty princess!";
     const result=isMe
-      ? `<div class="result-banner ${winner?"winner-banner":"rough-banner"}">${winner?"WINNER!":"THAT'S ROUGH, BUDDY"}</div>`
+      ? `<div class="result-banner ${winner?"winner-banner":"rough-banner"}"><span class="desktop-result">${winner?"WINNER!":"THAT'S ROUGH, BUDDY"}</span><span class="mobile-result">${winner?wifeWinnerMessage:wifeLoserMessage}</span></div>`
       : `<div class="placement-label">${placement}</div>`;
     const suitRows=state.suits.map(s=>{
       const d=points[s.id];

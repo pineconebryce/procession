@@ -368,3 +368,13 @@ button{border:1px solid #4b4941;background:#252520;color:var(--text);padding:11p
   #hand .card[data-suit="blue"] .figure img{width:100%;max-width:100%;}
   #hand .card[data-suit="orange"] .figure img{width:104%;max-width:104%;}
 }
+
+
+/* v30 mobile-only wife affirmation result messages */
+.mobile-result{display:none}
+@media(max-width:800px){
+  .desktop-result{display:none}
+  .mobile-result{display:block}
+  .winner-banner{font-size:14px;line-height:1.25;letter-spacing:.04em;padding:8px 7px}
+  .rough-banner{font-size:13px;line-height:1.3;letter-spacing:.02em;padding:8px 7px}
+}
