@@ -90,6 +90,7 @@ function snapshot(room, meId) {
       id:p.id,name:p.name,connected:p.connected,isBot:!!p.isBot,botDifficulty:p.botDifficulty||null,handCount:p.hand.length,
       hand:p.id===meId?p.hand.map(publicCard):undefined,
       tableau:p.tableau.map(publicCard),
+      cardsCollected:p.tableau.length,
       score:scores(room)[p.id],
       selectionSubmitted:p.selected?.length===2
     })),
@@ -226,7 +227,8 @@ function chooseBotSelection(room,p) {
       const i=x.hand.findIndex(c=>c.id===id); if(i>=0) x.tableau.push(x.hand.splice(i,1)[0]);
     }
     const sc=scores(room), min=Math.min(...Object.values(sc));
-    room.winner=room.players.filter(x=>sc[x.id]===min).map(x=>x.name);
+    const minCards=Math.min(...room.players.filter(x=>sc[x.id]===min).map(x=>x.tableau.length));
+    room.winner=room.players.filter(x=>sc[x.id]===min && x.tableau.length===minCards).map(x=>x.name);
     room.status="gameover"; room.message=`Game over. Lowest score: ${min}.`;
   }
 }
@@ -389,7 +391,8 @@ function handle(room, p, msg) {
       }
       const sc=scores(room);
       const min=Math.min(...Object.values(sc));
-      room.winner=room.players.filter(x=>sc[x.id]===min).map(x=>x.name);
+      const minCards=Math.min(...room.players.filter(x=>sc[x.id]===min).map(x=>x.tableau.length));
+      room.winner=room.players.filter(x=>sc[x.id]===min && x.tableau.length===minCards).map(x=>x.name);
       room.status="gameover"; room.message=`Game over. Lowest score: ${min}.`;
     } else room.message=`${room.players.filter(x=>x.selected?.length===2).length}/${room.players.length} players selected.`;
     return null;

@@ -386,9 +386,10 @@ function showEndgameAnnouncement(){
 }
 function showGameOver(){
   const minScore=Math.min(...state.players.map(p=>p.score));
-  const ordered=[...state.players].sort((a,b)=>a.score-b.score || (a.id===me?-1:b.id===me?1:0));
+  const minCards=Math.min(...state.players.filter(p=>p.score===minScore).map(p=>p.cardsCollected ?? p.tableau.length));
+  const ordered=[...state.players].sort((a,b)=>a.score-b.score || (a.cardsCollected??a.tableau.length)-(b.cardsCollected??b.tableau.length) || (a.id===me?-1:b.id===me?1:0));
   const rows=ordered.map((p,index)=>{
-    const winner=p.score===minScore;
+    const winner=p.score===minScore && (p.cardsCollected??p.tableau.length)===minCards;
     const isMe=p.id===me;
     const points=suitPointsForPlayer(p);
     const n=index+1;
@@ -406,10 +407,10 @@ function showGameOver(){
       const d=points[s.id];
       return `<div class="final-suit-row ${d.controlled?"controlled":""}"><span class="final-suit-name" style="color:${s.color}">${s.symbol} ${s.name}</span><span>${d.controlled?"WON · ":""}${d.points} pts</span></div>`;
     }).join("");
-    return `<div class="gameover-player ${winner?"is-winner":""} ${isMe?"my-result":""}">${result}<div class="final-player-head"><b>${esc(p.name)}${isMe?" · YOU":""}</b><strong>${p.score} TOTAL</strong></div><div class="final-suits"><div class="final-suits-title">SUIT POINTS</div>${suitRows}</div></div>`;
+    return `<div class="gameover-player ${winner?"is-winner":""} ${isMe?"my-result":""}">${result}<div class="final-player-head"><b>${esc(p.name)}${isMe?" · YOU":""}</b><strong>${p.score} TOTAL · ${p.cardsCollected??p.tableau.length} CARDS</strong></div><div class="final-suits"><div class="final-suits-title">SUIT POINTS</div>${suitRows}</div></div>`;
   }).join("");
   const panel=$("gameOverPanel");
-  panel.innerHTML=`<h3>Final Score</h3><p>Winning a suit makes every card of that suit worth 1 point.</p><div class="gameover-scores">${rows}</div><div class="modal-actions"><button onclick="location.reload()">New game</button></div>`;
+  panel.innerHTML=`<h3>Final Score</h3><p>Winning a suit makes every card of that suit worth 1 point. If points are tied, fewer cards collected wins.</p><div class="gameover-scores">${rows}</div><div class="modal-actions"><button onclick="location.reload()">New game</button></div>`;
   panel.classList.remove("hidden");
 }
 
