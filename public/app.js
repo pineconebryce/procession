@@ -181,7 +181,6 @@ function renderGame(){
     }
   }
   if(state.status==="selection") renderSelection(mep);
-  updateMobilePlayButton();
   if(state.status==="gameover") showGameOver();
   else $("gameOverPanel").classList.add("hidden");
 }
@@ -263,7 +262,7 @@ function commitHandCard(card,allowFinal=false){
   if(state.status==="playing")send({type:"play",cardId:card.id});
 }
 function attachHandHover(card,node,allowFinal=false){
-  const mobile=()=>window.matchMedia("(max-width:650px)").matches;
+  const mobile=()=>window.matchMedia && window.matchMedia("(hover: none), (pointer: coarse)").matches;
   node.addEventListener("mouseenter",()=>{
     if(mobile())return;
     applyHandPreview(card,node,allowFinal);
@@ -283,7 +282,7 @@ function attachHandHover(card,node,allowFinal=false){
 function updateMobilePlayButton(){
   const btn=$("mobilePlayBtn");
   if(!btn)return;
-  const mobile=window.matchMedia && window.matchMedia("(max-width:650px)").matches;
+  const mobile=window.matchMedia && window.matchMedia("(hover: none), (pointer: coarse)").matches;
   const canPlay=state && (state.status==="playing" || state.status==="final") && state.currentPlayer===me;
   const selectedCard=canPlay && mobileSelectedCardId ? state.players.find(p=>p.id===me)?.hand.find(c=>c.id===mobileSelectedCardId) : null;
   const finalTurn=canPlay && state.status==="final";
@@ -421,5 +420,4 @@ function showGameOver(){
 
 function esc(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function renderSuits(){ $("suits").innerHTML=[["red","Red","◆"],["blue","Blue","●"],["green","Green","▲"],["yellow","Yellow","★"],["purple","Purple","⬟"],["orange","Orange","✚"]].map(x=>`<div class="suit-chip"><span class="sym">${x[2]}</span><span>${x[1]}</span></div>`).join("")}
-$("mobilePlayBtn").onclick=commitMobileSelectedCard;
 connect();

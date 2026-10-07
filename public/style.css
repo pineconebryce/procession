@@ -204,6 +204,13 @@ button{border:1px solid #4b4941;background:#252520;color:var(--text);padding:11p
 .full-board{display:block}.full-board .table{width:100%;max-width:none}.full-board + *{max-width:none}
 @media(max-width:900px){.header-player-name{max-width:70px}.turn-label{display:none}.header-right{gap:7px}.topbar{padding:8px 16px}}
 @media(max-width:650px){.header-players{justify-content:flex-start}.header-player{padding:4px 6px}.header-player-name{max-width:58px}.header-player-score{display:none}.top-left-nav .howto-button{padding:7px 9px;font-size:10px}.home-brand b{font-size:12px}}
+@media(max-width:650px) and (orientation:portrait){
+  .topbar{flex-wrap:wrap;align-items:center;gap:5px 8px;padding:7px 10px;}
+  .top-left-nav{flex:1 1 auto;min-width:0;}
+  .header-right{flex:1 0 100%;width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px;align-items:center;}
+  .header-players{grid-column:1;grid-row:1;min-width:0;justify-content:flex-start;}
+  .room-badge{grid-column:2;grid-row:1;padding:6px 9px;font-size:10px;}
+}
 /* Card artwork refresh: strong suit color + detailed left-facing procession characters. */
 .card{border:2px solid var(--suit-color)!important;border-top-width:7px!important;background:#fffdf7;box-shadow:0 9px 22px #0007, inset 0 0 0 3px color-mix(in srgb,var(--suit-color) 16%,transparent)}
 .card[data-suit="red"]{background:linear-gradient(145deg,#fff7f5,#f7d4d1)}
