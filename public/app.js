@@ -56,10 +56,26 @@ function connect(){
 }
 function send(x){if(ws?.readyState===1)ws.send(JSON.stringify(x))}
 function show(id){["lobby","room","game"].forEach(x=>$(x).classList.toggle("hidden",x!==id))}
+function updateRoomRestartButton(){
+  const b=$("roomBadge"); if(!b)return;
+  const host=!!state?.players?.length && state.players[0]?.id===me;
+  b.disabled=!host;
+  b.title=host?"Room options — start a new game with the same players":"Only the host can start a new game";
+}
+function confirmNewGame(){
+  if(!state || state.players.length<2 || state.players[0]?.id!==me)return;
+  $("modalTitle").innerHTML="Start a new game?";
+  $("modalBody").innerHTML=`<p>This will end the current game and start a fresh game in <b>ROOM ${esc(state.code)}</b> with the same players.</p><p>Everyone will receive new cards, and the first player will be chosen at random.</p>`;
+  $("modalActions").innerHTML=`<button id="cancelNewGame">Cancel</button><button id="confirmNewGame" class="primary">Start New Game</button>`;
+  $("modal").classList.remove("hidden");
+  $("cancelNewGame").onclick=()=>$("modal").classList.add("hidden");
+  $("confirmNewGame").onclick=()=>{ $("modal").classList.add("hidden"); send({type:"restart"}); };
+}
 $("createBtn").onclick=()=>{const n=$("name").value.trim()||"Player";send({type:"create",name:n})};
 $("joinBtn").onclick=()=>{const n=$("name").value.trim()||"Player",c=$("code").value.trim().toUpperCase();send({type:"join",name:n,code:c})};
 $("startBtn").onclick=()=>send({type:"start"});
 $("addBotBtn").onclick=()=>send({type:"addBot",difficulty:$("botDifficulty").value});
+$("roomBadge").onclick=confirmNewGame;
 $("homeBtn").onclick=()=>{
   manualHome=true;
   state=null; me=null; selected.clear(); submittedSelection=false; lastEndKey=null;
@@ -114,7 +130,7 @@ function render(){
   show("game"); renderGame();
 }
 function renderRoom(){
-  $("roomCodeTitle").textContent=state.code; $("roomBadge").textContent=state.code;
+  $("roomCodeTitle").textContent=state.code; $("roomBadge").textContent=state.code; updateRoomRestartButton();
   const host=state.players[0]?.id===me;
   $("startBtn").disabled=state.players.length<2;
   $("addBotBtn").disabled=!host || state.players.length>=6;
@@ -126,6 +142,7 @@ function renderRoom(){
   }).join("");
 }
 function renderGame(){
+  updateRoomRestartButton();
   const oldConfirm=document.getElementById("confirmSelect");
   if(state.status!=="selection" && oldConfirm) oldConfirm.remove();
   const current=state.players.find(p=>p.id===state.currentPlayer);
@@ -377,7 +394,7 @@ function renderSelection(mep){
   if(mep.selectionSubmitted)submittedSelection=true;
   $("handHint").textContent=submittedSelection?`WAITING FOR OTHER PLAYERS · ${count}/${state.players.length} READY`:`${selected.size}/2 SELECTED`;
   let btn=document.getElementById("confirmSelect");
-  if(!btn){btn=document.createElement("button");btn.id="confirmSelect";btn.className="primary";$ ("hand").after(btn);}
+  if(!btn){btn=document.createElement("button");btn.id="confirmSelect";btn.className="primary";$("hand").after(btn);}
   if(submittedSelection){btn.textContent="Waiting for other players";btn.disabled=true;btn.classList.remove("primary");}
   else {btn.textContent="Reveal my 2 cards";btn.disabled=selected.size!==2;btn.classList.add("primary");btn.onclick=()=>{if(selected.size===2){submittedSelection=true;send({type:"select",cardIds:[...selected]});renderGame();}};}
 }

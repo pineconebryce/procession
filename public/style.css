@@ -450,3 +450,29 @@ button{border:1px solid #4b4941;background:#252520;color:var(--text);padding:11p
   .header-players{width:100%;min-width:0;justify-content:flex-start;overflow-x:auto;padding:2px 0 3px;}
   .room-badge{position:absolute;top:7px;right:10px;padding:6px 9px;font-size:10px;z-index:2;}
 }
+
+/* v35: room code doubles as host new-game control. */
+.room-badge{appearance:none;background:transparent;cursor:pointer;font:inherit;}
+.room-badge:disabled{cursor:default;opacity:.9;}
+.room-badge:not(:disabled):hover{background:#1b1a15;border-color:var(--gold);}
+
+/* v35: landscape Procession wraps after nine cards; Hand remains five across. */
+@media (hover: none) and (orientation: landscape), (pointer: coarse) and (orientation: landscape){
+  .procession{
+    display:grid;
+    grid-template-columns:repeat(9,minmax(0,1fr));
+    gap:4px;
+    width:100%;
+    overflow:visible;
+    padding:2px 0 5px;
+    align-items:start;
+  }
+  .procession .card,.procession .procession-slot{
+    width:100%;
+    min-width:0;
+    max-width:none;
+    height:auto;
+    flex:none;
+    aspect-ratio:82 / 108;
+  }
+}

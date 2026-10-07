@@ -239,10 +239,25 @@ function beginGame(room) {
   room.deck=deck;
   room.procession=deck.splice(0,6);
   for(const p of room.players) { p.hand=deck.splice(0,5); p.tableau=[]; }
-  room.status="playing"; room.currentPlayer=room.players[0].id; room.turnNumber=1;
-  room.message=`${room.players[0].name}'s turn.`;
+  room.status="playing";
+  const firstIndex=Math.floor(Math.random()*room.players.length);
+  const firstPlayer=room.players[firstIndex];
+  room.currentPlayer=firstPlayer.id; room.turnNumber=1;
+  room.message=`${firstPlayer.name}'s turn.`;
   broadcast(room);
-  if(room.players[0].isBot) scheduleBot(room,room.players[0].id);
+  if(firstPlayer.isBot) scheduleBot(room,firstPlayer.id);
+}
+
+function restartGame(room, p) {
+  if(p.id!==room.players[0].id) return "Only the host can start a new game.";
+  for(const timer of room.botTimers.values()) clearTimeout(timer);
+  room.botTimers.clear();
+  room.players.forEach(x=>{ x.hand=[]; x.tableau=[]; x.selected=[]; });
+  room.endGame=null;
+  room.winner=null;
+  room.message="Starting a new game...";
+  beginGame(room);
+  return null;
 }
 
 function nextNormalPlayer(room, afterId) {
@@ -367,6 +382,10 @@ function handle(room, p, msg) {
     if(p.id!==room.players[0].id) return "Only the host can start.";
     if(room.players.length<2) return "Need at least 2 players.";
     beginGame(room); return null;
+  }
+  if(msg.type==="restart") {
+    if(room.players.length<2) return "Need at least 2 players.";
+    return restartGame(room,p);
   }
   if(msg.type==="play") {
     if(room.status!=="playing" || room.currentPlayer!==p.id) return "It is not your turn.";
