@@ -1,4 +1,4 @@
-let ws=null, me=null, state=null, selected=new Set(), submittedSelection=false, lastStatus=null, lastEndKey=null, manualHome=false;
+let ws=null, me=null, state=null, selected=new Set(), submittedSelection=false, lastStatus=null, lastEndKey=null, manualHome=false, mobileSelectedCardId=null, mobileSelectedAllowFinal=false;
 
 function captureCardPositions(){
   const map=new Map();
@@ -154,13 +154,13 @@ function renderGame(){
   mep.hand.forEach(c=>{
     const node=cardEl(c,{zone:"hand",selectable:canPlay,onclick:()=>{
       if(!canPlay)return;
-      if(touchUI){ previewHandCard(c,node,state.status==="final"); }
+      if(touchUI){ previewHandCard(c,node,state.status==="final"); mobileSelectedCardId=c.id; mobileSelectedAllowFinal=state.status==="final"; updateMobilePlayButton(); }
       else send({type:"play",cardId:c.id});
     }});
     if(canPlay)attachHandHover(c,node,state.status==="final",touchUI);
     $("hand").appendChild(node);
   });
-  $("handHint").textContent=canPlay?(touchUI?"TAP A CARD TO PREVIEW · SWIPE UP TO PLAY":"HOVER TO PREVIEW · CLICK TO PLAY"):state.status==="selection"?"SELECT 2 CARDS":"";
+  $("handHint").textContent=canPlay?(touchUI?"TAP A CARD TO PREVIEW · TAP PLAY TO COMMIT":"HOVER TO PREVIEW · CLICK TO PLAY"):state.status==="selection"?"SELECT 2 CARDS":"";
 
   if(state.status==="final"){
     const final=state.currentPlayer===me;
@@ -169,18 +169,19 @@ function renderGame(){
       const touchUI=window.matchMedia && window.matchMedia("(hover: none), (pointer: coarse)").matches;
       mep.hand.forEach(c=>{
         const node=cardEl(c,{zone:"hand",selectable:true,onclick:()=>{
-          if(touchUI) previewHandCard(c,node,true);
+          if(touchUI){ previewHandCard(c,node,true); mobileSelectedCardId=c.id; mobileSelectedAllowFinal=true; updateMobilePlayButton(); }
           else send({type:"finalPlay",cardId:c.id});
         }});
         attachHandHover(c,node,true,touchUI);
         $("hand").appendChild(node);
       });
-      $("handHint").textContent=touchUI?"TAP A CARD TO PREVIEW · SWIPE UP TO PLAY":"FINAL TURN · HOVER TO PREVIEW · CLICK TO PLAY";
+      $("handHint").textContent=touchUI?"TAP A CARD TO PREVIEW · TAP PLAY TO COMMIT":"FINAL TURN · HOVER TO PREVIEW · CLICK TO PLAY";
     } else {
       $("handHint").textContent="WAITING FOR FINAL TURNS";
     }
   }
   if(state.status==="selection") renderSelection(mep);
+  updateMobilePlayButton();
   if(state.status==="gameover") showGameOver();
   else $("gameOverPanel").classList.add("hidden");
 }
@@ -263,39 +264,43 @@ function commitHandCard(card,allowFinal=false){
 }
 function attachHandHover(card,node,allowFinal=false){
   const mobile=()=>window.matchMedia("(max-width:650px)").matches;
-  let touchStartY=null, touchStartX=null, suppressClickUntil=0;
   node.addEventListener("mouseenter",()=>{
     if(mobile())return;
     applyHandPreview(card,node,allowFinal);
   });
   node.addEventListener("mouseleave",()=>{if(!mobile())clearPreview();});
-  node.addEventListener("touchstart",e=>{
-    if(!mobile())return;
-    const t=e.changedTouches[0]; touchStartY=t.clientY; touchStartX=t.clientX;
-    e.preventDefault();
-    applyHandPreview(card,node,allowFinal);
-  },{passive:false});
-  node.addEventListener("touchend",e=>{
-    if(!mobile() || touchStartY===null)return;
-    const t=e.changedTouches[0];
-    const dy=t.clientY-touchStartY, dx=t.clientX-touchStartX;
-    touchStartY=null; touchStartX=null;
-    suppressClickUntil=Date.now()+500;
-    if(dy < -45 && Math.abs(dy)>Math.abs(dx)){
-      commitHandCard(card,allowFinal);
-    }else{
-      applyHandPreview(card,node,allowFinal);
-    }
-    e.preventDefault();
-  },{passive:false});
   node.onclick=()=>{
-    if(Date.now()<suppressClickUntil)return;
     if(mobile()){
+      mobileSelectedCardId=card.id;
+      mobileSelectedAllowFinal=allowFinal;
       applyHandPreview(card,node,allowFinal);
+      updateMobilePlayButton();
       return;
     }
     commitHandCard(card,allowFinal);
   };
+}
+function updateMobilePlayButton(){
+  const btn=$("mobilePlayBtn");
+  if(!btn)return;
+  const mobile=window.matchMedia && window.matchMedia("(max-width:650px)").matches;
+  const canPlay=state && (state.status==="playing" || state.status==="final") && state.currentPlayer===me;
+  const selectedCard=canPlay && mobileSelectedCardId ? state.players.find(p=>p.id===me)?.hand.find(c=>c.id===mobileSelectedCardId) : null;
+  const finalTurn=canPlay && state.status==="final";
+  btn.classList.toggle("hidden",!(mobile && canPlay));
+  btn.disabled=!selectedCard;
+  btn.textContent=finalTurn?"PLAY CARD":"PLAY CARD";
+}
+function commitMobileSelectedCard(){
+  if(!state || state.currentPlayer!==me || !mobileSelectedCardId)return;
+  const mep=state.players.find(p=>p.id===me);
+  const card=mep?.hand.find(c=>c.id===mobileSelectedCardId);
+  if(!card)return;
+  if(state.status==="final" && mobileSelectedAllowFinal){send({type:"finalPlay",cardId:card.id});}
+  else if(state.status==="playing"){send({type:"play",cardId:card.id});}
+  mobileSelectedCardId=null;
+  mobileSelectedAllowFinal=false;
+  updateMobilePlayButton();
 }
 function drawProtectionBracket(count, number){
   removeProtectionBracket();
@@ -320,7 +325,7 @@ function removeProtectionBracket(){
 }
 function clearPreview(){
   document.querySelectorAll("#procession .card").forEach(x=>x.classList.remove("preview-safe","preview-collect","preview-protected","preview-pickup"));
-  document.querySelectorAll("#hand .card").forEach(x=>x.classList.remove("preview-source"));
+  document.querySelectorAll("#hand .card").forEach(x=>x.classList.remove("preview-source","mobile-preview-selected"));
   removeProtectionBracket();
   $("previewKey").classList.add("hidden");
   $("previewKey").textContent="";
@@ -416,4 +421,5 @@ function showGameOver(){
 
 function esc(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function renderSuits(){ $("suits").innerHTML=[["red","Red","◆"],["blue","Blue","●"],["green","Green","▲"],["yellow","Yellow","★"],["purple","Purple","⬟"],["orange","Orange","✚"]].map(x=>`<div class="suit-chip"><span class="sym">${x[2]}</span><span>${x[1]}</span></div>`).join("")}
+$("mobilePlayBtn").onclick=commitMobileSelectedCard;
 connect();

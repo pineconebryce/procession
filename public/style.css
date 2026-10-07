@@ -408,3 +408,37 @@ button{border:1px solid #4b4941;background:#252520;color:var(--text);padding:11p
     flex-wrap:initial;
   }
 }
+
+
+/* v32 mobile: explicit PLAY button and landscape-friendly touch layout. */
+.mobile-play-btn{display:none;}
+@media(max-width:650px){
+  .mobile-play-btn{
+    display:block;
+    position:fixed;
+    left:12px;
+    right:12px;
+    bottom:calc(10px + env(safe-area-inset-bottom));
+    width:calc(100% - 24px);
+    min-height:48px;
+    z-index:50;
+    font-weight:900;
+    letter-spacing:.08em;
+    box-shadow:0 8px 28px #000b;
+  }
+  .mobile-play-btn.hidden{display:none!important;}
+  #game{padding-bottom:78px;}
+  #hand .card.selectable{touch-action:manipulation;}
+}
+@media(max-width:650px) and (orientation:landscape){
+  .topbar{height:54px;padding:5px 10px;}
+  .game-layout{padding-top:6px;}
+  .table{padding-bottom:4px;}
+  .table-title{margin-top:4px;margin-bottom:3px;}
+  .procession,.hand{gap:4px;padding-top:2px;padding-bottom:5px;}
+  .procession .card,.procession .procession-slot,#hand .card{aspect-ratio:82/108;}
+  .procession .card .figure{width:58%;height:58%;}
+  #hand .card .figure{width:62%;height:52%;}
+  #game{padding-bottom:68px;}
+  .mobile-play-btn{min-height:42px;bottom:calc(6px + env(safe-area-inset-bottom));}
+}
